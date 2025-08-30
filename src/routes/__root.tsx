@@ -3,6 +3,7 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanstackDevtools } from '@tanstack/react-devtools'
 
 import Footer from '../components/Footer'
+import { Toaster } from '../components/ui/sonner'
 
 function RootComponent() {
   const location = useLocation()
@@ -14,6 +15,7 @@ function RootComponent() {
         <Outlet />
       </main>
       {!isRushPage && <Footer />}
+      <Toaster position="bottom-right" />
       <TanstackDevtools
         config={{
           position: 'bottom-left',

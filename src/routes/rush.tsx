@@ -245,7 +245,7 @@ function Rush() {
           {/* Fallback placeholder cards if no assets */}
           {rushAssets.filter(asset => asset.asset_type === 'image' && !asset.title.toLowerCase().includes('rush-banner')).length === 0 &&
            globalAssets.filter(asset => asset.asset_type === 'image' && !asset.title.toLowerCase().includes('rush-banner')).length === 0 &&
-           [...Array(4)].map((_, index) => (
+           [...Array(0)].map((_, index) => (
             <div 
               key={`fallback-${index}`}
               className={`w-[299px] h-[170px] bg-white shadow-[0px_1px_8px_0px_rgba(0,0,0,0.15)] ${

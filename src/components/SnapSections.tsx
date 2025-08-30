@@ -1,4 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
+import { toast } from 'sonner'
 import landingImage from '../assets/landing.png'
 import patternImage from '../assets/pattern-720p-16x9.png'
 import Navigation from './Navigation'
@@ -12,9 +14,35 @@ interface SnapSectionsProps {
   error?: string | null
 }
 
+interface PaintedImage {
+  id: string
+  x: number
+  y: number
+  imageUrl: string
+  timestamp: number
+}
+
 export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, assets, globalAssets, loading, error }) => {
   const northeasternRef = useRef<HTMLDivElement>(null)
+  const videoSectionRef = useRef<HTMLDivElement>(null)
+  const aboutUsSectionRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
   const [vectorPosition, setVectorPosition] = useState({ x: 0, y: 0 })
+  const [hasShownToast, setHasShownToast] = useState(false)
+  const [galleryAssets, setGalleryAssets] = useState<Asset[]>([])
+  const [paintedImages, setPaintedImages] = useState<PaintedImage[]>([])
+  const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 })
+  const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0)
+
+  // Load gallery assets
+  useEffect(() => {
+    const allAssets = [...(assets || []), ...(globalAssets || [])]
+    const galleryImages = allAssets.filter(asset => 
+      asset.title.toLowerCase().includes('gallery') && asset.picture
+    )
+    setGalleryAssets(galleryImages)
+    console.log('Found gallery assets:', galleryImages)
+  }, [assets, globalAssets])
 
   // Debug: Log assets to help troubleshoot
   useEffect(() => {
@@ -44,6 +72,110 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
     window.addEventListener('resize', updateVectorPosition)
     return () => window.removeEventListener('resize', updateVectorPosition)
   }, [])
+
+  // Intersection observer for video section toast
+  useEffect(() => {
+    if (!videoSectionRef.current) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5 && !hasShownToast) {
+            // Show toast when video section is more than 50% visible
+            toast("Interested in rushing? Click here to learn more!", {
+              duration: 5000,
+              action: {
+                label: "Learn More",
+                onClick: () => navigate({ to: '/rush' })
+              },
+              onDismiss: () => setHasShownToast(true),
+              onAutoClose: () => setHasShownToast(true)
+            })
+            setHasShownToast(true)
+          } else if (!entry.isIntersecting) {
+            // Dismiss any active toasts when leaving the video section
+            toast.dismiss()
+          }
+        })
+      },
+      {
+        threshold: [0.5], // Trigger when 50% of the video section is visible
+        rootMargin: '0px'
+      }
+    )
+
+    observer.observe(videoSectionRef.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [navigate, hasShownToast])
+
+  // Mouse tracking effect for gallery painting in About Us section
+  useEffect(() => {
+    if (!aboutUsSectionRef.current || galleryAssets.length === 0) return
+
+    let animationFrameId: number
+    let lastPaintTime = 0
+    const paintCooldown = 500 // Minimum 500ms between paints for longer delay
+
+    const handleMouseMove = (event: MouseEvent) => {
+      const now = Date.now()
+      if (now - lastPaintTime < paintCooldown) return
+
+      event.preventDefault()
+      event.stopPropagation()
+
+      cancelAnimationFrame(animationFrameId)
+      animationFrameId = requestAnimationFrame(() => {
+        const rect = aboutUsSectionRef.current!.getBoundingClientRect()
+        const mouseX = event.clientX - rect.left
+        const mouseY = event.clientY - rect.top
+        
+        // Calculate distance moved since last position
+        const distance = Math.sqrt(
+          Math.pow(mouseX - lastMousePosition.x, 2) + 
+          Math.pow(mouseY - lastMousePosition.y, 2)
+        )
+        
+        // Only paint if moved more than 100 pixels
+        if (distance >= 200) {
+          const currentAsset = galleryAssets[currentGalleryIndex]
+          if (currentAsset?.picture) {
+            const newPaintedImage: PaintedImage = {
+              id: `painted-${Date.now()}-${Math.random()}`,
+              x: mouseX,
+              y: mouseY,
+              imageUrl: urlFor(currentAsset.picture).width(200).height(200).url(),
+              timestamp: Date.now()
+            }
+            
+            setPaintedImages(prev => {
+              // Limit to maximum 10 painted images for performance
+              const newImages = [...prev, newPaintedImage]
+              return newImages.length > 10 ? newImages.slice(-10) : newImages
+            })
+            setLastMousePosition({ x: mouseX, y: mouseY })
+            setCurrentGalleryIndex(prev => (prev + 1) % galleryAssets.length)
+            lastPaintTime = now
+            
+            // Remove the painted image after 200ms delay + 1000ms fade duration
+            setTimeout(() => {
+              setPaintedImages(prev => prev.filter(img => img.id !== newPaintedImage.id))
+            }, 1200)
+          }
+        }
+      })
+    }
+
+    const aboutUsElement = aboutUsSectionRef.current
+    aboutUsElement.addEventListener('mousemove', handleMouseMove, { passive: true })
+    
+    return () => {
+      aboutUsElement.removeEventListener('mousemove', handleMouseMove)
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [galleryAssets, lastMousePosition, currentGalleryIndex])
 
   // Parallax effect for About Us section
   useEffect(() => {
@@ -130,7 +262,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
       </div>
 
       {/* Rush Video Section */}
-      <div className="h-screen snap-start">
+      <div ref={videoSectionRef} className="h-screen snap-start">
         <video 
           className="w-full h-full object-cover"
           autoPlay 
@@ -145,9 +277,32 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
       </div>
 
       {/* About Us Section - Blue Background */}
-      <div className="about-us-section bg-[#000000] py-16 sm:py-32 px-8 snap-start min-h-screen relative overflow-hidden">
+      <div ref={aboutUsSectionRef} className="about-us-section bg-[#000000] py-16 sm:py-32 px-8 snap-start min-h-screen relative overflow-hidden">
         {/* Parallax Background */}
         <div className="parallax-background absolute inset-0 bg-[#000000] transform translate-y-0 transition-transform duration-1000 ease-out">
+        </div>
+        
+        {/* Painted Gallery Images Container */}
+        <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+          {paintedImages.map((paintedImage) => (
+            <div
+              key={paintedImage.id}
+              className="absolute pointer-events-none"
+              style={{
+                left: paintedImage.x,
+                top: paintedImage.y,
+                transform: 'translate(-50%, -50%)', // Center the image at mouse position
+                animation: 'fadeOutScaleDelayed 2000ms ease-out forwards',
+                willChange: 'transform, opacity' // Optimize for animations
+              }}
+            >
+              <img
+                src={paintedImage.imageUrl}
+                alt="Gallery painting"
+                className="w-[200px] h-[200px] object-cover rounded-lg opacity-100"
+              />
+            </div>
+          ))}
         </div>
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16">

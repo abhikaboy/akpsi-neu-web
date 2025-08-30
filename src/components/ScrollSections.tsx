@@ -99,7 +99,7 @@ export const ScrollSections: React.FC<ScrollSectionsProps> = ({ assets, globalAs
       const rect = valueCardsContainer.getBoundingClientRect()
       
       // Only intercept scroll when the bottom of the cards section is in view
-      if (rect.bottom <= window.innerHeight && rect.bottom > 0) {
+      if (rect.bottom <= window.innerHeight && rect.bottom > 600) {
         const maxScrollX = valueCardsScroll.scrollWidth - valueCardsScroll.clientWidth
         const currentScrollX = valueCardsScroll.scrollLeft
         
