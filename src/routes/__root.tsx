@@ -1,14 +1,19 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router'
+import { Outlet, createRootRoute, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanstackDevtools } from '@tanstack/react-devtools'
 
-import Header from '../components/Header'
+import Footer from '../components/Footer'
 
-export const Route = createRootRoute({
-  component: () => (
+function RootComponent() {
+  const location = useLocation()
+  const isRushPage = location.pathname === '/rush'
+
+  return (
     <>
-      <Header />
-      <Outlet />
+      <main className="min-h-screen">
+        <Outlet />
+      </main>
+      {!isRushPage && <Footer />}
       <TanstackDevtools
         config={{
           position: 'bottom-left',
@@ -21,5 +26,9 @@ export const Route = createRootRoute({
         ]}
       />
     </>
-  ),
+  )
+}
+
+export const Route = createRootRoute({
+  component: RootComponent,
 })
