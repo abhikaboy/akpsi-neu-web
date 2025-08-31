@@ -337,24 +337,26 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
           loop 
           playsInline
           controls={false}
+          key={rushVideoUrl || 'local'} // Force re-render when video source changes
           onError={(e) => {
             console.error('Video load error:', e)
-            setVideoLoadError(true)
             // If Sanity video fails, try to fallback to local video
             if (rushVideoUrl) {
               console.log('Sanity video failed, falling back to local video')
               setRushVideoUrl(null)
+              setVideoLoadError(true)
             }
           }}
           onLoadStart={() => {
             console.log('Video load started:', rushVideoUrl ? 'Sanity video' : 'Local video')
+            setVideoLoadError(false) // Reset error state when starting to load
           }}
           onCanPlay={() => {
             console.log('Video can play:', rushVideoUrl ? 'Sanity video' : 'Local video')
             setVideoLoadError(false)
           }}
         >
-          {rushVideoUrl && !videoLoadError ? (
+          {rushVideoUrl ? (
             <source src={rushVideoUrl} type={getVideoMimeType(rushVideoUrl)} />
           ) : (
             <source src="/src/assets/rushvideof25.MOV" type="video/quicktime" />
