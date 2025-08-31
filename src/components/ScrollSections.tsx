@@ -126,7 +126,30 @@ export const ScrollSections: React.FC<ScrollSectionsProps> = ({ assets, globalAs
       {/* Why Rush Section */}
       <div className="px-8 py-16 sm:py-32 border-b border-black">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-12 gap-5">
+          {/* Mobile Layout - Stacked and Center Aligned */}
+          <div className="block md:hidden text-left space-y-8">
+            <div className="font-['Avenir:Heavy'] leading-none not-italic text-black text-[28px] sm:text-[32px]" style={{ letterSpacing: '-0.72px' }}>
+              <p className="mb-2">WHY RUSH ALPHA</p>
+              <p>KAPPA PSI?</p>
+            </div>
+            
+            <div className="font-['Avenir:Roman'] not-italic text-black text-[18px] sm:text-[20px]" style={{ letterSpacing: '-0.4px' }}>
+              <p className="leading-[1.25] mb-8">From business and consulting to marketing, technology, and design, our brothers are emerging as transformative leaders who drive innovation and create positive change across every industry</p>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="font-['Outfit'] text-black border-black hover:bg-black hover:text-white transition-colors"
+              style={{ letterSpacing: '-0.32px' }}
+              onClick={() => navigate({ to: '/brothers' })}
+            >
+              → Meet the brothers
+            </Button>
+          </div>
+
+          {/* Desktop Layout - Grid */}
+          <div className="hidden md:grid grid-cols-12 gap-5">
             {/* Left Column - Heading spans 3 columns */}
             <div className="col-span-3">
               <div className="font-['Avenir:Heavy'] leading-none not-italic relative text-black text-[36px] text-nowrap whitespace-pre" style={{ letterSpacing: '-0.72px' }}>
@@ -165,8 +188,23 @@ export const ScrollSections: React.FC<ScrollSectionsProps> = ({ assets, globalAs
             OUR VALUES
           </h2>
           
-          {/* Values Cards Horizontal Scroll */}
-          <div className="value-cards-container">
+          {/* Mobile Layout - Vertical Stack */}
+          <div className="block md:hidden space-y-6">
+            {valuesConfig.map((value, index) => (
+              <div key={value.title} className="w-full">
+                <ValueCard
+                  title={value.title}
+                  description={value.description}
+                  backgroundImage={getValueImageUrl(value.title, value.fallbackImage)}
+                  textColor={value.textColor}
+                  icon={<PhosphorBooks />}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Layout - Horizontal Scroll */}
+          <div className="hidden md:block value-cards-container">
             <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide value-cards-scroll">
               {valuesConfig.map((value, index) => (
                 <div key={value.title} className="flex-shrink-0 w-[427px]">
@@ -184,8 +222,8 @@ export const ScrollSections: React.FC<ScrollSectionsProps> = ({ assets, globalAs
         </div>
       </div>
 
-      {/* Shaping People Section */}
-      <div className="px-8 py-16 sm:py-32 border-b border-black">
+      {/* Shaping People Section - Hidden on Mobile */}
+      <div className="md:block px-8 py-16 sm:py-32 border-b border-black">
         <div className="max-w-7xl mx-auto text-center">
           <p className="font-['Avenir:Book'] text-lg sm:text-xl text-black mb-16" style={{ letterSpacing: '-0.4px' }}>(we're shaping)</p>
           
@@ -218,7 +256,7 @@ export const ScrollSections: React.FC<ScrollSectionsProps> = ({ assets, globalAs
           {logoImages.map((logo, index) => (
             <div 
               key={index}
-              className="flex-1 min-w-0 basis-[calc(25%-0.75rem)] h-12 sm:h-24 flex items-center justify-center bg-white rounded shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-300"
+              className="flex-1 min-w-0 basis-[calc(50%-0.5rem)] sm:basis-[calc(33.333%-0.667rem)] md:basis-[calc(25%-0.75rem)] h-20 md:h-12 sm:h-16 md:h-24 flex items-center justify-center bg-white rounded shadow-sm border border-gray-100 p-2 sm:p-4 hover:shadow-md transition-all duration-300"
             >
               <img 
                 src={logo.src}

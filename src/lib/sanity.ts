@@ -199,3 +199,94 @@ export async function getAssetsByType(assetType: string): Promise<Asset[]> {
     throw error
   }
 }
+
+export async function getAssetByTitle(title: string): Promise<Asset | null> {
+  try {
+    console.log(`Fetching asset with title: ${title}`)
+    
+    // First try exact match
+    let result = await client.fetch(
+      '*[_type == "asset" && isActive == true && title == $title][0]{..., picture{asset->{...}}}',
+      { title }
+    )
+    
+    // If not found, try case-insensitive search
+    if (!result) {
+      console.log(`Exact match not found, trying case-insensitive search for: ${title}`)
+      result = await client.fetch(
+        '*[_type == "asset" && isActive == true && lower(title) == lower($title)][0]{..., picture{asset->{...}}}',
+        { title }
+      )
+    }
+    
+    // If still not found, try partial match
+    if (!result) {
+      console.log(`Case-insensitive match not found, trying partial match for: ${title}`)
+      result = await client.fetch(
+        '*[_type == "asset" && isActive == true && title match "*" + $title + "*"][0]{..., picture{asset->{...}}}',
+        { title }
+      )
+    }
+    
+    console.log(`Fetched asset with title ${title}:`, result)
+    return result || null
+  } catch (error) {
+    console.error(`Error fetching asset with title ${title}:`, error)
+    throw error
+  }
+}
+
+// Debug function to list all assets
+export async function listAllAssets(): Promise<Asset[]> {
+  try {
+    console.log('Fetching all assets for debugging...')
+    const result = await client.fetch(
+      '*[_type == "asset"]{..., picture{asset->{...}}} | order(title asc)'
+    )
+    console.log('All assets in Sanity:', result)
+    return result
+  } catch (error) {
+    console.error('Error fetching all assets:', error)
+    throw error
+  }
+}
+
+// Helper function to get file URL from Sanity asset
+export function getFileUrl(asset: any): string | null {
+  if (!asset?.picture?.asset) return null
+  
+  // Use Sanity's built-in file URL generation if possible
+  if (asset.picture.asset.url) {
+    return asset.picture.asset.url
+  }
+  
+  // Fallback to manual URL construction
+  const ref = asset.picture.asset._ref
+  if (!ref) return null
+  
+  const [, id, extension] = ref.match(/^file-([a-f0-9]+)-(\w+)$/) || []
+  
+  if (!id || !extension) return null
+  
+  return `https://cdn.sanity.io/files/${client.config().projectId}/${client.config().dataset}/${id}.${extension}`
+}
+
+// Helper function to get video MIME type from file extension
+export function getVideoMimeType(url: string): string {
+  const extension = url.split('.').pop()?.toLowerCase()
+  
+  switch (extension) {
+    case 'mp4':
+      return 'video/mp4'
+    case 'webm':
+      return 'video/webm'
+    case 'ogg':
+      return 'video/ogg'
+    case 'mov':
+      return 'video/quicktime'
+    case 'avi':
+      return 'video/x-msvideo'
+    default:
+      return 'video/mp4' // Default fallback
+  }
+}

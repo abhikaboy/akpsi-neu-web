@@ -141,9 +141,10 @@ function Rush() {
       <Navigation currentPage="Rush" mode="light" />
       
       {/* Main Layout Container */}
-      <div className="flex min-h-screen">
-        {/* Fixed Left Side - Image and RUSH text - 60% width */}
-        <div className="fixed left-0 top-0 w-[60vw] h-screen z-0">
+      <div className="flex flex-col md:flex-row min-h-screen">
+        {/* Desktop: Fixed Left Side - Image and RUSH text - 60% width */}
+        {/* Mobile: Full screen hero section that scrolls */}
+        <div className="relative md:fixed left-0 top-0 w-full md:w-[60vw] h-screen z-0">
           {/* Background Image with Gradient Overlay */}
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -168,14 +169,15 @@ function Rush() {
           </div>
           
           {/* RUSH Text */}
-                      <div className="absolute bottom-[4px] left-[32px] font-['PP_Editorial_New'] text-white text-[164px] leading-none tracking-[-3.28px]">
+          <div className="absolute bottom-[4px] left-[32px] font-['PP_Editorial_New'] text-white text-[100px] md:text-[164px] leading-none tracking-[-3.28px]">
             <p>RUSH</p>
           </div>
         </div>
 
-        {/* Right Side Content - Scrollable with Parallax - 40% width */}
-        <div className="ml-[60vw] w-[40vw] pt-0">
-          <div className="pl-8 pr-8 pt-20 sm:pt-24 pb-16">
+        {/* Desktop: Right Side Content - Scrollable - 40% width */}
+        {/* Mobile: Content below hero section */}
+        <div className="w-full md:ml-[60vw] md:w-[40vw] pt-0">
+          <div className="pl-8 pr-8 pt-20 md:pt-24 pb-16">
             {/* Content Sections with proper spacing */}
             <div className="space-y-[50px]">
               {contentSections.map((section, index) => (
@@ -219,10 +221,10 @@ function Rush() {
       </div>
 
       {/* Extended Blue Background for Scroll */}
-      <div className="bg-[#0d2f56] h-[2000px] w-[60vw] fixed left-0 top-[1033px] -z-10"></div>
+      <div className="bg-[#0d2f56] h-[2000px] w-full md:w-[60vw] fixed left-0 top-[1033px] -z-10"></div>
       
       {/* Additional Content Sections (Images/Cards) */}
-      <div className="ml-[60vw] relative">
+      <div className="w-full md:ml-[60vw] relative">
         <div className="pl-6 pr-8 space-y-8 pb-32">
           {/* Dynamic Image Cards from Assets */}
           {rushAssets

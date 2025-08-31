@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import landingImage from '../assets/landing.png'
 import patternImage from '../assets/pattern-720p-16x9.png'
 import Navigation from './Navigation'
-import { type Asset, urlFor } from '../lib/sanity'
+import { type Asset, urlFor, getAssetByTitle, getFileUrl, getVideoMimeType, listAllAssets } from '../lib/sanity'
 
 interface SnapSectionsProps {
   onSnapComplete?: () => void
@@ -33,6 +33,8 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
   const [paintedImages, setPaintedImages] = useState<PaintedImage[]>([])
   const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 })
   const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0)
+  const [rushVideoUrl, setRushVideoUrl] = useState<string | null>(null)
+  const [videoLoadError, setVideoLoadError] = useState<boolean>(false)
 
   // Load gallery assets
   useEffect(() => {
@@ -42,6 +44,72 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
     )
     setGalleryAssets(galleryImages)
     console.log('Found gallery assets:', galleryImages)
+  }, [assets, globalAssets])
+
+  // Load rush video from Sanity
+  useEffect(() => {
+    const loadRushVideo = async () => {
+      try {
+        console.log('Looking for rush-video asset in Sanity...')
+        
+        // First, let's see all available assets to debug
+        const allAssets = [...(assets || []), ...(globalAssets || [])]
+        console.log('All available assets:', allAssets)
+        console.log('Asset titles:', allAssets.map(asset => asset.title))
+        
+        // Try to find rush-video asset in the passed assets first
+        let rushVideoAsset = allAssets.find(asset => 
+          asset.title.toLowerCase() === 'rush-video'
+        )
+        
+        // If not found, try variations
+        if (!rushVideoAsset) {
+          rushVideoAsset = allAssets.find(asset => 
+            asset.title.toLowerCase().includes('rush') && 
+            asset.title.toLowerCase().includes('video')
+          )
+        }
+        
+        if (!rushVideoAsset) {
+          // If not found in passed assets, try fetching directly from Sanity
+          console.log('rush-video not found in passed assets, fetching from Sanity...')
+          
+          // First, let's see all assets in Sanity for debugging
+          try {
+            const allSanityAssets = await listAllAssets()
+            console.log('All Sanity assets:', allSanityAssets.map(a => ({ title: a.title, type: a.asset_type })))
+          } catch (error) {
+            console.error('Error listing all assets:', error)
+          }
+          
+          const fetchedAsset = await getAssetByTitle('rush-video')
+          rushVideoAsset = fetchedAsset || undefined
+        }
+        
+        console.log('Found rush-video asset:', rushVideoAsset)
+        
+        if (rushVideoAsset) {
+          const videoUrl = getFileUrl(rushVideoAsset)
+          console.log('Generated video URL:', videoUrl)
+          if (videoUrl) {
+            console.log('Found rush-video asset, using Sanity URL:', videoUrl)
+            setRushVideoUrl(videoUrl)
+          } else {
+            console.log('rush-video asset found but no valid file URL, using local fallback')
+            console.log('Asset structure:', JSON.stringify(rushVideoAsset, null, 2))
+            setRushVideoUrl(null)
+          }
+        } else {
+          console.log('No rush-video asset found in Sanity, using local fallback')
+          setRushVideoUrl(null)
+        }
+      } catch (error) {
+        console.error('Error loading rush video from Sanity:', error)
+        setRushVideoUrl(null)
+      }
+    }
+
+    loadRushVideo()
   }, [assets, globalAssets])
 
   // Debug: Log assets to help troubleshoot
@@ -226,12 +294,11 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
         <div className="absolute inset-0 z-10">
           {/* Horizontal line at the same height as "Northeastern University" */}
           <div 
-            className="absolute bg-white"
+            className="absolute bg-white hidden md:block "
             style={{
               left: '10%',
               top: vectorPosition.y + 15,
               height: '1px',
-              width: '70%'
             }}
           />
           {/* Vertical line to the right of "Northeastern University" */}
@@ -270,8 +337,28 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
           loop 
           playsInline
           controls={false}
+          onError={(e) => {
+            console.error('Video load error:', e)
+            setVideoLoadError(true)
+            // If Sanity video fails, try to fallback to local video
+            if (rushVideoUrl) {
+              console.log('Sanity video failed, falling back to local video')
+              setRushVideoUrl(null)
+            }
+          }}
+          onLoadStart={() => {
+            console.log('Video load started:', rushVideoUrl ? 'Sanity video' : 'Local video')
+          }}
+          onCanPlay={() => {
+            console.log('Video can play:', rushVideoUrl ? 'Sanity video' : 'Local video')
+            setVideoLoadError(false)
+          }}
         >
-          <source src="/src/assets/rushvideof25.MOV" type="video/quicktime" />
+          {rushVideoUrl && !videoLoadError ? (
+            <source src={rushVideoUrl} type={getVideoMimeType(rushVideoUrl)} />
+          ) : (
+            <source src="/src/assets/rushvideof25.MOV" type="video/quicktime" />
+          )}
           Your browser does not support the video tag.
         </video>
       </div>
@@ -309,7 +396,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
             <p className="text-[#c4c4c4] text-sm font-['Avenir:Roman'] font-normal mb-16">(About Us)</p>
             
             <div className="mb-16">
-              <p className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-['PP_Editorial_New'] leading-[1.1] max-w-4xl mx-auto" style={{ letterSpacing: '-0.96px' }}>
+              <p className="text-white text-4xl sm:text-3xl md:text-4xl lg:text-5xl font-['PP_Editorial_New'] leading-[1.1] max-w-4xl mx-auto" style={{ letterSpacing: '-0.96px' }}>
                 For the past 12 years, Alpha Kappa Psi's Chi Sigma chapter has been shaping the business leaders of tomorrow
               </p>
             </div>
@@ -381,7 +468,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
               </div>
             </div>
 
-            <p className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-['PP_Editorial_New'] leading-[1.1] max-w-4xl mx-auto" style={{ letterSpacing: '-0.96px' }}>
+            <p className="text-white text-4xl sm:text-3xl md:text-4xl lg:text-5xl font-['PP_Editorial_New'] leading-[1.1] max-w-4xl mx-auto" style={{ letterSpacing: '-0.96px' }}>
               We're the premier business fraternity at Northeastern University open to all majors.
             </p>
           </div>
