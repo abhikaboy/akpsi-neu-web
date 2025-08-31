@@ -16,17 +16,6 @@ function RootComponent() {
       </main>
       {!isRushPage && <Footer />}
       <Toaster position="bottom-right" />
-      <TanstackDevtools
-        config={{
-          position: 'bottom-left',
-        }}
-        plugins={[
-          {
-            name: 'Tanstack Router',
-            render: <TanStackRouterDevtoolsPanel />,
-          },
-        ]}
-      />
     </>
   )
 }
