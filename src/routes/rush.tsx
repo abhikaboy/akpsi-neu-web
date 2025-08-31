@@ -107,12 +107,29 @@ function Rush() {
         console.log('Fetched global assets:', globalData)
         
         // Use Sanity data if available, otherwise fallback to Figma data
-        setRushEvents(events.length > 0 ? events : fallbackEvents)
+        const eventsToUse = events.length > 0 ? events : fallbackEvents
+        // Sort events by date in chronological order (ensure proper date parsing)
+        const sortedEvents = eventsToUse.sort((a, b) => {
+          const dateA = new Date(a.date)
+          const dateB = new Date(b.date)
+          console.log(`Comparing: ${a.name} (${a.date} -> ${dateA.getTime()}) vs ${b.name} (${b.date} -> ${dateB.getTime()})`)
+          return dateA.getTime() - dateB.getTime()
+        })
+        console.log('Final sorted events:', sortedEvents.map(e => ({ name: e.name, date: e.date })))
+        setRushEvents(sortedEvents)
         setRushAssets(rushData)
         setGlobalAssets(globalData)
       } catch (err) {
         console.error('Error fetching rush data, using fallback data:', err)
-        setRushEvents(fallbackEvents)
+        // Sort fallback events by date as well
+        const sortedFallbackEvents = [...fallbackEvents].sort((a, b) => {
+          const dateA = new Date(a.date)
+          const dateB = new Date(b.date)
+          console.log(`Fallback comparing: ${a.name} (${a.date} -> ${dateA.getTime()}) vs ${b.name} (${b.date} -> ${dateB.getTime()})`)
+          return dateA.getTime() - dateB.getTime()
+        })
+        console.log('Final sorted fallback events:', sortedFallbackEvents.map(e => ({ name: e.name, date: e.date })))
+        setRushEvents(sortedFallbackEvents)
         setError('Using fallback data')
       } finally {
         setLoading(false)

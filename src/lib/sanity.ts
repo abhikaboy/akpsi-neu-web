@@ -125,11 +125,13 @@ export async function getUpcomingRushEvents(): Promise<RushEvent[]> {
   try {
     console.log('Fetching upcoming rush events...')
     const now = new Date().toISOString()
+    console.log('Current time for filtering:', now)
     const result = await client.fetch(
       '*[_type == "rushEvent" && isActive == true && date >= $now] | order(date asc)',
       { now }
     )
-    console.log('Fetched upcoming rush events:', result)
+    console.log('Fetched upcoming rush events (raw):', result)
+    console.log('Event dates:', result.map((e: any) => ({ name: e.name, date: e.date, parsed: new Date(e.date) })))
     return result
   } catch (error) {
     console.error('Error fetching upcoming rush events:', error)
