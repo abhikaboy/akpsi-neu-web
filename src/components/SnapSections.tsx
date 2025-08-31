@@ -294,7 +294,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
         <div className="absolute inset-0 z-10">
           {/* Horizontal line at the same height as "Northeastern University" */}
           <div 
-            className="absolute bg-white hidden md:block "
+            className="absolute bg-white hidden md:block w-0 md:w-[70%]"
             style={{
               left: '10%',
               top: vectorPosition.y + 15,

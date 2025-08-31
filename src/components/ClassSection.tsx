@@ -51,12 +51,10 @@ const ClassSection: React.FC<ClassSectionProps> = ({ className, members, assets,
           >
             {row.map((member, memberIndex) => {
               // Alternate image position for visual variety
-              // Even rows: left, right, left
-              // Odd rows: right, left, right
+              // Even rows: all left
+              // Odd rows: all right
               const isEvenRow = rowIndex % 2 === 0
-              const imagePosition = isEvenRow 
-                ? (memberIndex % 2 === 0 ? 'left' : 'right')
-                : (memberIndex % 2 === 0 ? 'right' : 'left')
+              const imagePosition = isEvenRow ? 'left' : 'right'
 
               return (
                 <MemberCard

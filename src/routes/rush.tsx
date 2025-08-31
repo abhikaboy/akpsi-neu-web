@@ -70,15 +70,15 @@ const fallbackEvents: RushEvent[] = [
 const contentSections = [
   {
     title: "Why Rush?",
-    content: "This is a body of text that talks about why someone should potentially recruit for Alpha Kappa Psi professional business fraternity a really cool group of people on campus who do really cool things! yahoo!"
+    content: "Alpha Kappa Psi at Northeastern offers unparalleled professional development, blending technical business acumen with essential soft skills like networking and communication. Through hands-on projects, mentorship, and leadership roles, you'll make tangible impacts on campus and in Boston's business community while building lifelong connections that accelerate your career trajectory.",
   },
   {
     title: "Who Should Get Involved?",
-    content: "This is a body of text that talks about why someone should potentially recruit for Alpha Kappa Psi professional business fraternity a really cool group of people on campus who do really cool things! yahoo!"
+    content: "Alpha Kappa Psi welcomes students from every major, background, and experience level- not just business students. Our inclusive community celebrates diverse perspectives, whether you're in engineering, arts, or sciences. We believe professional excellence transcends disciplines, and our supportive brotherhood ensures everyone finds mentorship, growth opportunities, and genuine friendships regardless of their journey.",
   },
   {
     title: "Tips & Tricks",
-    content: "This is a body of text that talks about why someone should potentially recruit for Alpha Kappa Psi professional business fraternity a really cool group of people on campus who do really cool things! yahoo!"
+    content: "Be genuinely yourself while demonstrating professional polish. Attend multiple events, engage diverse brothers beyond leadership, and remember names. Research the chapter beforehand, prepare thoughtful questions, and articulate how you'll contribute. Share leadership experiences and specific goals. Dress appropriately, arrive early, and follow up on conversations."
   }
 ]
 
