@@ -8,7 +8,7 @@ export default defineType({
     defineField({ 
       name: 'picture', 
       title: 'Picture', 
-      type: 'file',
+      type: 'file'
     }),
     defineField({
       name: 'asset_type',
