@@ -26,7 +26,7 @@ export default defineType({
       validation: Rule => Rule.required()
     }),
     defineField({ 
-      name: 'class', 
+      name: 'pledgeClass', 
       title: 'Pledge Class', 
       type: 'string',
       options: {
@@ -58,6 +58,12 @@ export default defineType({
         ]
       },
       validation: Rule => Rule.required()
+    }),
+    defineField({ 
+      name: 'graduationYear', 
+      title: 'Graduation Year', 
+      type: 'number',
+      validation: Rule => Rule.required().min(2020).max(2040)
     }),
     defineField({ 
       name: 'email', 

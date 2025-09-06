@@ -12,7 +12,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
   imagePosition = 'left',
   variant = 'default'
 }) => {
-  const { name, picture, major, class: classYear, email, linkedin } = member
+  const { name, picture, major, graduationYear, email, linkedin } = member
   const pictureUrl = picture ? urlFor(picture).width(400).height(500).url() : ''
   const cardClasses = variant === 'highlighted' 
     ? "bg-white flex items-start gap-6 p-4 rounded-lg shadow-sm border border-gray-100 w-full"
@@ -40,7 +40,7 @@ const MemberCard: React.FC<MemberCardProps> = ({
           {name}
         </h3>
         <p className="font-['Avenir:Roman'] text-base text-black">
-          Class of {classYear}
+          Class of {graduationYear}
         </p>
         <p className="font-['Avenir:Roman'] text-base text-black mt-2">
           {major}

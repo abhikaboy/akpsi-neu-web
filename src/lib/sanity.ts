@@ -34,7 +34,8 @@ export interface Member {
     }
   }
   major: string
-  class: string
+  pledgeClass: string
+  graduationYear: number
   email: string
   linkedin: string
 }
@@ -92,18 +93,34 @@ export async function getMembers(): Promise<Member[]> {
   }
 }
 
-export async function getMembersByClass(className: string): Promise<Member[]> {
+export async function getMembersByPledgeClass(pledgeClass: string): Promise<Member[]> {
   try {
-    console.log(`Fetching members for class: ${className}`)
-    const query = '*[_type == "member" && class == $class] | order(name asc)'
-    const params = { class: className }
+    console.log(`Fetching members for pledge class: ${pledgeClass}`)
+    const query = '*[_type == "member" && pledgeClass == $pledgeClass] | order(name asc)'
+    const params = { pledgeClass }
     console.log('Query:', query, 'Params:', params)
     
     const result = await client.fetch(query, params)
-    console.log(`Fetched ${result.length} members for class ${className}:`, result)
+    console.log(`Fetched ${result.length} members for pledge class ${pledgeClass}:`, result)
     return result
   } catch (error) {
-    console.error(`Error fetching members for class ${className}:`, error)
+    console.error(`Error fetching members for pledge class ${pledgeClass}:`, error)
+    throw error
+  }
+}
+
+export async function getMembersByGraduationYear(year: number): Promise<Member[]> {
+  try {
+    console.log(`Fetching members for graduation year: ${year}`)
+    const query = '*[_type == "member" && graduationYear == $year] | order(name asc)'
+    const params = { year }
+    console.log('Query:', query, 'Params:', params)
+    
+    const result = await client.fetch(query, params)
+    console.log(`Fetched ${result.length} members for graduation year ${year}:`, result)
+    return result
+  } catch (error) {
+    console.error(`Error fetching members for graduation year ${year}:`, error)
     throw error
   }
 }
