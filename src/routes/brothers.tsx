@@ -98,10 +98,10 @@ function Brothers() {
             <span className="font-['PP_Editorial_New']">Our brothers are</span>
             <br />
             <span className="font-['PP_Editorial_New:Ultralight_Italic'] underline">leaders</span>
-            <span className="font-['PP_Editorial_New']"> in their fields</span>
+            <span className="font-['PP_Editorial_New']"> in their fields.</span>
           </h1>
           <p className="font-['Avenir:Roman'] text-black text-[16px] tracking-[-0.48px]">
-            lets meet the current roster
+            Let's meet the current roster.
           </p>
         </div>
       </div>

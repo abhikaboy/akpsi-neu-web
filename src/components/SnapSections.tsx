@@ -554,7 +554,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
             
             <div className="mb-16">
               <p className="text-white text-4xl sm:text-3xl md:text-4xl lg:text-5xl font-['PP_Editorial_New'] leading-[1.1] max-w-4xl mx-auto" style={{ letterSpacing: '-0.96px' }}>
-                For the past 12 years, Alpha Kappa Psi's Chi Sigma chapter has been shaping the business leaders of tomorrow
+                For the past 12 years, Alpha Kappa Psi's Chi Sigma chapter has been shaping the business leaders of tomorrow.
               </p>
             </div>
 
@@ -626,7 +626,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
             </div>
 
             <p className="text-white text-4xl sm:text-3xl md:text-4xl lg:text-5xl font-['PP_Editorial_New'] leading-[1.1] max-w-4xl mx-auto" style={{ letterSpacing: '-0.96px' }}>
-              We're the premier business fraternity at Northeastern University open to all majors.
+              We're the premier co-ed business fraternity at Northeastern University open to all majors.
             </p>
           </div>
           

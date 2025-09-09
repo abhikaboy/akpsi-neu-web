@@ -23,7 +23,7 @@ export default function Footer() {
               Alpha Kappa Psi
             </h3>
             <p className="text-sm text-white leading-relaxed">
-              Professional business fraternity dedicated to developing principled business leaders.
+              Professional co-ed business fraternity dedicated to developing principled business leaders.
             </p>
             <div className="flex space-x-3">
               <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
@@ -37,7 +37,7 @@ export default function Footer() {
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                 <a 
-                  href="https://instagram.com/akpsi" 
+                  href="https://instagram.com/akpsi_neu" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   aria-label="Follow us on Instagram"
@@ -48,7 +48,7 @@ export default function Footer() {
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                 <a 
-                  href="https://linkedin.com/company/akpsi" 
+                  href="https://linkedin.com/company/chi-sigma-akpsi" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   aria-label="Connect with us on LinkedIn"

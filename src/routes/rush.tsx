@@ -74,7 +74,7 @@ const contentSections = [
   },
   {
     title: "Who Should Get Involved?",
-    content: "Alpha Kappa Psi welcomes students from every major, background, and experience level- not just business students. Our inclusive community celebrates diverse perspectives, whether you're in engineering, arts, or sciences. We believe professional excellence transcends disciplines, and our supportive brotherhood ensures everyone finds mentorship, growth opportunities, and genuine friendships regardless of their journey.",
+    content: "Alpha Kappa Psi welcomes students from every major, background, and experience level—not just business students. Our inclusive community celebrates diverse perspectives, whether you're in engineering, arts, or sciences. We believe professional excellence transcends disciplines, and our supportive brotherhood ensures everyone finds mentorship, growth opportunities, and genuine friendships regardless of their journey.",
   },
   {
     title: "Tips & Tricks",

@@ -47,31 +47,31 @@ export const ScrollSections: React.FC<ScrollSectionsProps> = ({ assets, globalAs
   const valuesConfig = [
     {
       title: "Unity",
-      description: "Our brothers stand together in our endeavors to achieve greatness and support each other",
+      description: "Our brothers stand together in our endeavors to achieve greatness and support each other.",
       fallbackImage: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1498&q=80",
       textColor: "white" as const
     },
     {
       title: "Integrity",
-      description: "Through thoughtful and honest practice, our brothers hold true to themselves and others",
+      description: "Through thoughtful and honest practice, our brothers hold true to themselves and others.",
       fallbackImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
       textColor: "white" as const
     },
     {
       title: "Service",
-      description: "We are committed to serving our community and making a positive impact in the world around us",
+      description: "We are committed to serving our community and making a positive impact in the world around us.",
       fallbackImage: "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
       textColor: "white" as const
     },
     {
       title: "Knowledge",
-      description: "We strive to be the best in all our professional and personal endeavors",
+      description: "We strive to be the best in all our professional and personal endeavors.",
       fallbackImage: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
       textColor: "white" as const
     },
     {
       title: "Brotherhood",
-      description: "The bonds we form extend beyond college, creating lifelong connections and mutual support",
+      description: "The bonds we form extend beyond college, creating lifelong connections and mutual support.",
       fallbackImage: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1632&q=80",
       textColor: "white" as const
     }
@@ -164,7 +164,7 @@ export const ScrollSections: React.FC<ScrollSectionsProps> = ({ assets, globalAs
             {/* Right Column - Content spans 4 columns */}
             <div className="col-span-4">
               <div className="font-['Avenir:Roman'] not-italic relative text-black text-[20px]" style={{ letterSpacing: '-0.4px' }}>
-                <p className="leading-[1.25] mb-8">From business and consulting to marketing, technology, and design, our brothers are emerging as transformative leaders who drive innovation and create positive change across every industry</p>
+                <p className="leading-[1.25] mb-8">From business and consulting to marketing, technology, and design, our brothers are emerging as transformative leaders who drive innovation and create positive change across every industry.</p>
               </div>
               
               <Button 
@@ -225,7 +225,7 @@ export const ScrollSections: React.FC<ScrollSectionsProps> = ({ assets, globalAs
       {/* Shaping People Section - Hidden on Mobile */}
       <div className="md:block px-8 py-16 sm:py-32 border-b border-black">
         <div className="max-w-7xl mx-auto text-center">
-          <p className="font-['Avenir:Book'] text-lg sm:text-xl text-black mb-16" style={{ letterSpacing: '-0.4px' }}>(we're shaping)</p>
+          <p className="font-['Avenir:Book'] text-lg sm:text-xl text-black mb-16" style={{ letterSpacing: '-0.4px' }}>(We're shaping)</p>
           
           <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16">
             <div className="font-['Avenir:Heavy'] text-lg sm:text-xl text-black" style={{ letterSpacing: '-0.4px' }}>
@@ -244,7 +244,7 @@ export const ScrollSections: React.FC<ScrollSectionsProps> = ({ assets, globalAs
             </div>
           </div>
           
-          <p className="font-['Avenir:Book'] text-lg sm:text-xl text-black" style={{ letterSpacing: '-0.4px' }}>for years, and years to come</p>
+          <p className="font-['Avenir:Book'] text-lg sm:text-xl text-black" style={{ letterSpacing: '-0.4px' }}>For years and years to come.</p>
         </div>
       </div>
 

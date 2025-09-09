@@ -111,7 +111,7 @@ function Consulting() {
           <p className="text-base sm:text-md md:text-lg leading-relaxed">
             Chi Sigma Consulting is a pro-bono consulting group dedicated to delivering both impactful and lasting solutions for nonprofits in the Greater Boston Area. Our diverse group of Northeastern University students draws on experience that spans 8 disciplines, from investment banking to mechanical engineering. As aspiring consultants with a passion for problem solving, we seek opportunities to apply our knowledge and research to real business situations with the goal of adding tangible value for clients.
             <br /><br />
-            We were founded by a group of motivated students who aim to bring positive impact to the greater Boston community. We share that passion for service and many of us have deeply rooted personal connections to the nonprofits and charities that we service.
+            We were founded by a group of motivated students who aim to bring positive impact to the greater Boston community. We share that passion for service, and many of us have deeply rooted personal connections to the nonprofits and charities that we serve.
           </p>
         </div>
       </div>
