@@ -37,7 +37,7 @@ export default function Footer() {
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                 <a 
-                  href="https://instagram.com/akpsi_neu" 
+                  href="https://www.instagram.com/akpsi_neu/?hl=en" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   aria-label="Follow us on Instagram"
@@ -48,7 +48,7 @@ export default function Footer() {
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                 <a 
-                  href="https://linkedin.com/company/chi-sigma-akpsi" 
+                  href="https://www.linkedin.com/company/chisigma-akpsineu/posts/?feedView=all" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   aria-label="Connect with us on LinkedIn"
