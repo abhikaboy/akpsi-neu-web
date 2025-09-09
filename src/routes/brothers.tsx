@@ -37,7 +37,7 @@ function Brothers() {
         
         // Group members by class using reduce
         const groupedMembers = allMembers.reduce<MembersByClass>((acc, member) => {
-          const className = member.class || 'Unknown'
+          const className = member.pledgeClass || 'Unknown'
           if (!acc[className]) {
             acc[className] = []
           }
@@ -108,7 +108,21 @@ function Brothers() {
 
       {/* Render all class sections dynamically */}
       {Object.entries(membersByClass)
-        .sort(([a], [b]) => a.localeCompare(b)) // Sort classes alphabetically
+        .sort(([a], [b]) => {
+          // Greek alphabet order (Alpha = 1, Beta = 2, ..., Omega = 24)
+          const greekOrder: Record<string, number> = {
+            'Alpha': 1, 'Beta': 2, 'Gamma': 3, 'Delta': 4, 'Epsilon': 5, 'Zeta': 6,
+            'Eta': 7, 'Theta': 8, 'Iota': 9, 'Kappa': 10, 'Lambda': 11, 'Mu': 12,
+            'Nu': 13, 'Xi': 14, 'Omicron': 15, 'Pi': 16, 'Rho': 17, 'Sigma': 18,
+            'Tau': 19, 'Upsilon': 20, 'Phi': 21, 'Chi': 22, 'Psi': 23, 'Omega': 24
+          }
+          
+          const orderA = greekOrder[a] || 0  // Unknown classes go to the end
+          const orderB = greekOrder[b] || 0
+          
+          // Sort in descending order (latest class first)
+          return orderB - orderA
+        })
         .map(([className, members]) => (
           <ClassSection
             key={className}

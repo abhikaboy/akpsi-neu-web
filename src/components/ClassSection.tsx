@@ -47,7 +47,7 @@ const ClassSection: React.FC<ClassSectionProps> = ({ className, members, assets,
         {memberRows.map((row, rowIndex) => (
           <div 
             key={rowIndex} 
-            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${rowIndex > 0 ? 'mt-6' : ''}`}
+            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${rowIndex > 0 ? 'mt-6' : ''}`}
           >
             {row.map((member, memberIndex) => {
               // Alternate image position for visual variety

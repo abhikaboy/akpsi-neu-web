@@ -3,8 +3,9 @@ import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import landingImage from '../assets/landing.png'
 import patternImage from '../assets/pattern-720p-16x9.png'
+import rushVideoLocal from '../assets/rushvideof25.MOV?url'
 import Navigation from './Navigation'
-import { type Asset, urlFor, getAssetByTitle, getFileUrl, getVideoMimeType, listAllAssets } from '../lib/sanity'
+import { type Asset, type Copy, urlFor, getAssetByTitle, getCopyByTitle, getFileUrl, getImageUrlFromFileAsset, getVideoMimeType, listAllAssets } from '../lib/sanity'
 
 interface SnapSectionsProps {
   onSnapComplete?: () => void
@@ -35,6 +36,8 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
   const [currentGalleryIndex, setCurrentGalleryIndex] = useState(0)
   const [rushVideoUrl, setRushVideoUrl] = useState<string | null>(null)
   const [videoLoadError, setVideoLoadError] = useState<boolean>(false)
+  const [presidentialLetter, setPresidentialLetter] = useState<Copy | null>(null)
+  const [presidentAsset, setPresidentAsset] = useState<Asset | null>(null)
 
   // Load gallery assets
   useEffect(() => {
@@ -48,6 +51,8 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
 
   // Load rush video from Sanity
   useEffect(() => {
+    console.log('Local video path imported:', rushVideoLocal)
+    
     const loadRushVideo = async () => {
       try {
         console.log('Looking for rush-video asset in Sanity...')
@@ -110,6 +115,56 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
     }
 
     loadRushVideo()
+  }, [assets, globalAssets])
+
+  // Load presidential content from Sanity
+  useEffect(() => {
+    const loadPresidentialContent = async () => {
+      try {
+        console.log('Loading presidential content...')
+        
+        // Fetch presidential letter content
+        const letterContent = await getCopyByTitle('Presidential Letter')
+        console.log('Presidential letter content:', letterContent)
+        setPresidentialLetter(letterContent)
+        
+        // Try to find president asset in the passed assets first
+        const allAssets = [...(assets || []), ...(globalAssets || [])]
+        console.log('🔍 Searching for president asset in:', allAssets.map(a => ({ title: a.title, id: a._id, picture: a.picture })))
+        
+        let presidentAssetFound: Asset | null = allAssets.find(asset => 
+          asset.title.toLowerCase() === 'president'
+        ) || null
+        
+        // If not found in passed assets, try fetching directly from Sanity
+        if (!presidentAssetFound) {
+          console.log('President asset not found in passed assets, fetching from Sanity...')
+          presidentAssetFound = await getAssetByTitle('president')
+          
+          if (presidentAssetFound) {
+            console.log('🎯 Fetched president asset from Sanity:', {
+              id: presidentAssetFound._id,
+              title: presidentAssetFound.title,
+              picture: presidentAssetFound.picture
+            })
+            
+            // Log the picture reference for debugging
+            if (presidentAssetFound.picture?.asset?._ref) {
+              const ref = presidentAssetFound.picture.asset._ref
+              console.log('📷 Picture reference:', ref)
+            }
+          }
+        }
+        
+        console.log('President asset final:', presidentAssetFound)
+        setPresidentAsset(presidentAssetFound)
+        
+      } catch (error) {
+        console.error('Error loading presidential content:', error)
+      }
+    }
+
+    loadPresidentialContent()
   }, [assets, globalAssets])
 
   // Debug: Log assets to help troubleshoot
@@ -340,11 +395,17 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
           key={rushVideoUrl || 'local'} // Force re-render when video source changes
           onError={(e) => {
             console.error('Video load error:', e)
+            console.error('Failed video source:', rushVideoUrl || rushVideoLocal)
+            console.error('Video element:', e.target)
+            setVideoLoadError(true)
             // If Sanity video fails, try to fallback to local video
             if (rushVideoUrl) {
               console.log('Sanity video failed, falling back to local video')
               setRushVideoUrl(null)
-              setVideoLoadError(true)
+            } else {
+              console.error('Local video also failed to load. Video format may not be supported.')
+              console.error('Local video path:', rushVideoLocal)
+              // You may need to convert rushvideof25.MOV to MP4 format for better browser support
             }
           }}
           onLoadStart={() => {
@@ -359,10 +420,104 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
           {rushVideoUrl ? (
             <source src={rushVideoUrl} type={getVideoMimeType(rushVideoUrl)} />
           ) : (
-            <source src="/src/assets/rushvideof25.MOV" type="video/quicktime" />
+            <>
+              {/* Try the imported local video */}
+              <source src={rushVideoLocal} type="video/quicktime" />
+              {/* Additional fallback message */}
+            </>
           )}
           Your browser does not support the video tag.
         </video>
+      </div>
+
+      {/* Presidential Welcome Section */}
+      <div className="bg-black py-16 sm:py-32 px-8 snap-start min-h-screen relative overflow-hidden">
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Content Container */}
+          <div className="flex flex-col lg:flex-row items-start gap-12 lg:gap-16">
+            {/* President Image */}
+            <div className="flex-shrink-0 w-full lg:w-96">
+              {presidentAsset?.picture ? (
+                (() => {
+                  try {
+                    // Get the image URL from file asset
+                    const imageUrl = getImageUrlFromFileAsset(presidentAsset, 400, 500)
+                    
+                    if (!imageUrl) {
+                      throw new Error('Could not generate image URL from file asset')
+                    }
+                    
+                    return (
+                      <div className="w-full">
+                        <img
+                          src={imageUrl}
+                          alt="President"
+                            className="w-full h-auto object-cover rounded"
+                        />
+                        {/* President Name Below Image */}
+                        <div className="mt-4 text-right">
+                          <p className="font-['PP_Editorial_New'] text-white text-lg">Rebecca Silva</p>
+                          <p className="font-['Avenir:Roman'] text-yellow-500 text-sm mt-1">President</p>
+                        </div>
+                      </div>
+                    )
+                  } catch (error) {
+                    console.error('Error rendering president image:', error)
+                    return (
+                      <div className="w-full">
+                          <div className="w-full h-96 bg-gray-800 rounded flex items-center justify-center border-2 border-red-500">
+                          <div className="text-center text-red-400 font-['Avenir:Roman'] p-4">
+                            <p className="mb-2">⚠️ Image Error</p>
+                            <p className="text-sm">Please re-upload the president image in Sanity Studio</p>
+                          </div>
+                        </div>
+                        {/* Name below even on error */}
+                        <div className="mt-4 text-right">
+                          <p className="font-['PP_Editorial_New'] text-white text-lg">Rebecca Silva</p>
+                          <p className="font-['Avenir:Roman'] text-yellow-500 text-sm mt-1">President</p>
+                        </div>
+                      </div>
+                    )
+                  }
+                })()
+              ) : (
+                <div className="w-full">
+                    <div className="w-full h-96 bg-gray-800 rounded flex items-center justify-center">
+                    <p className="text-gray-400 font-['Avenir:Roman']">President image loading...</p>
+                  </div>
+                  {/* Placeholder name */}
+                  <div className="mt-4 text-right">
+                    <p className="font-['PP_Editorial_New'] text-white text-lg">Rebecca Silva</p>
+                    <p className="font-['Avenir:Roman'] text-yellow-500 text-sm mt-1">President</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Letter Content Card */}
+            <div className="flex-1">
+              {/* Section Title - Left aligned with text card */}
+              <h2 className="font-['PP_Editorial_New'] text-white text-2xl sm:text-3xl lg:text-4xl tracking-wide mb-8 text-left">
+                Presidential Welcome
+              </h2>
+              
+              {presidentialLetter ? (
+                <div className="text-white">
+                  <div
+                    className="font-['Avenir:Roman'] text-base leading-relaxed whitespace-pre-line"
+                    style={{ lineHeight: '1.6' }}
+                  >
+                    {presidentialLetter.content}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-gray-400 font-['Avenir:Roman']">
+                  <p>Loading presidential letter...</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* About Us Section - Blue Background */}

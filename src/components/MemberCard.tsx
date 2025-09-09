@@ -14,9 +14,12 @@ const MemberCard: React.FC<MemberCardProps> = ({
 }) => {
   const { name, picture, major, graduationYear, email, linkedin } = member
   const pictureUrl = picture ? urlFor(picture).width(400).height(500).url() : ''
+  // Remove padding from the side where image sits to let it touch the edge
+  const gapClass = 'gap-4'
+  const paddingClass = imagePosition === 'left' ? 'pl-0 pr-2' : 'pr-0 pl-2'
   const cardClasses = variant === 'highlighted' 
-    ? "bg-white flex items-start gap-6 p-4 rounded-lg shadow-sm border border-gray-100 w-full"
-    : "flex items-start gap-6 w-full"
+    ? `bg-white flex items-start ${gapClass} pt-4 pb-4 rounded-lg shadow-sm border border-gray-100 w-full ${paddingClass}`
+    : `flex items-start ${gapClass} w-full ${paddingClass}`
 
   const imageClasses = variant === 'highlighted'
     ? "flex-shrink-0 w-48 h-64 bg-gray-200 rounded-md bg-cover bg-center"

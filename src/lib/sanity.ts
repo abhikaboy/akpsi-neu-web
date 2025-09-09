@@ -53,7 +53,7 @@ export interface RushEvent {
 export interface Asset {
   _id: string
   picture?: {
-    _type: 'image'
+    _type: 'file'
     asset: {
       _ref: string
       _type: 'reference'
@@ -65,6 +65,18 @@ export interface Asset {
   description?: string
   isActive: boolean
   order?: number
+}
+
+export interface Copy {
+  _id: string
+  page: 'home' | 'about' | 'members' | 'alumni' | 'rush' | 'consulting' | 'events' | 'global'
+  title: string
+  content: string
+  contentType: 'heading' | 'subheading' | 'body' | 'quote' | 'caption' | 'button' | 'meta' | 'other'
+  section?: string
+  isActive: boolean
+  order?: number
+  notes?: string
 }
 
 // Test Sanity connection
@@ -288,6 +300,135 @@ export function getFileUrl(asset: any): string | null {
   if (!id || !extension) return null
   
   return `https://cdn.sanity.io/files/${client.config().projectId}/${client.config().dataset}/${id}.${extension}`
+}
+
+// Helper function to get image URL from file asset (for display purposes)
+export function getImageUrlFromFileAsset(asset: any, width?: number, height?: number): string | null {
+  console.log('🔍 getImageUrlFromFileAsset called with:', {
+    hasAsset: !!asset,
+    hasPicture: !!asset?.picture,
+    hasAssetRef: !!asset?.picture?.asset,
+    hasUrl: !!asset?.picture?.asset?.url,
+    url: asset?.picture?.asset?.url
+  })
+  
+  if (!asset?.picture?.asset) {
+    console.error('❌ No asset found')
+    return null
+  }
+  
+  const fileAsset = asset.picture.asset
+  
+  // If we have a direct URL (which we do in this case), use it
+  if (fileAsset.url) {
+    console.log('✅ Using direct URL from file asset:', fileAsset.url)
+    return fileAsset.url
+  }
+  
+  // If no direct URL, try the reference approach as fallback
+  const ref = fileAsset._ref || fileAsset._id
+  if (ref && ref.startsWith('file-')) {
+    console.log('🖼️ Processing file asset reference:', ref)
+    
+    const [, id, extension] = ref.match(/^file-([a-f0-9]+)-(\w+)$/) || []
+    
+    if (!id || !extension) {
+      console.error('🚨 Invalid file reference format:', ref)
+      return null
+    }
+    
+    const url = `https://cdn.sanity.io/files/${client.config().projectId}/${client.config().dataset}/${id}.${extension}`
+    console.log('📁 Generated file URL from reference:', url)
+    return url
+  }
+  
+  console.error('🚨 No usable URL or reference found')
+  return null
+}
+
+// Copy query functions
+export async function getCopyContent(): Promise<Copy[]> {
+  try {
+    console.log('Fetching all copy content...')
+    const result = await client.fetch('*[_type == "copy" && isActive == true] | order(page asc, order asc, title asc)')
+    console.log('Fetched copy content:', result)
+    return result
+  } catch (error) {
+    console.error('Error fetching copy content:', error)
+    throw error
+  }
+}
+
+export async function getCopyByPage(page: string): Promise<Copy[]> {
+  try {
+    console.log(`Fetching copy content for page: ${page}`)
+    const result = await client.fetch(
+      '*[_type == "copy" && isActive == true && page == $page] | order(order asc, title asc)',
+      { page }
+    )
+    console.log(`Fetched ${result.length} copy items for page ${page}:`, result)
+    return result
+  } catch (error) {
+    console.error(`Error fetching copy content for page ${page}:`, error)
+    throw error
+  }
+}
+
+export async function getCopyByPageAndSection(page: string, section: string): Promise<Copy[]> {
+  try {
+    console.log(`Fetching copy content for page: ${page}, section: ${section}`)
+    const result = await client.fetch(
+      '*[_type == "copy" && isActive == true && page == $page && section == $section] | order(order asc, title asc)',
+      { page, section }
+    )
+    console.log(`Fetched ${result.length} copy items for page ${page}, section ${section}:`, result)
+    return result
+  } catch (error) {
+    console.error(`Error fetching copy content for page ${page}, section ${section}:`, error)
+    throw error
+  }
+}
+
+export async function getCopyByTitle(title: string): Promise<Copy | null> {
+  try {
+    console.log(`Fetching copy content with title: ${title}`)
+    
+    // First try exact match
+    let result = await client.fetch(
+      '*[_type == "copy" && isActive == true && title == $title][0]',
+      { title }
+    )
+    
+    // If not found, try case-insensitive search
+    if (!result) {
+      console.log(`Exact match not found, trying case-insensitive search for: ${title}`)
+      result = await client.fetch(
+        '*[_type == "copy" && isActive == true && lower(title) == lower($title)][0]',
+        { title }
+      )
+    }
+    
+    console.log(`Fetched copy content with title ${title}:`, result)
+    return result || null
+  } catch (error) {
+    console.error(`Error fetching copy content with title ${title}:`, error)
+    throw error
+  }
+}
+
+export async function getCopyByContentType(contentType: string): Promise<Copy[]> {
+  try {
+    console.log(`Fetching copy content of type: ${contentType}`)
+    const result = await client.fetch(
+      '*[_type == "copy" && isActive == true && contentType == $contentType] | order(page asc, order asc, title asc)',
+      { contentType }
+    )
+    console.log(`Fetched ${result.length} copy items of type ${contentType}:`, result)
+    return result
+  } catch (error) {
+    console.error(`Error fetching copy content of type ${contentType}:`, error)
+    throw error
+  }
 }
 
 // Helper function to get video MIME type from file extension
