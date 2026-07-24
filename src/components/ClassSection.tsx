@@ -28,12 +28,6 @@ const ClassSection: React.FC<ClassSectionProps> = ({ className, members, assets,
     )
   }
 
-  // Split members into rows of 3 for alternating layout
-  const memberRows: Member[][] = []
-  for (let i = 0; i < members.length; i += 3) {
-    memberRows.push(members.slice(i, i + 3))
-  }
-
   return (
     <div className="px-8 pb-16">
       <div className="max-w-7xl mx-auto">
@@ -43,29 +37,12 @@ const ClassSection: React.FC<ClassSectionProps> = ({ className, members, assets,
           </h2>
           <div className="flex-1 h-px bg-black ml-8"></div>
         </div>
-        
-        {memberRows.map((row, rowIndex) => (
-          <div 
-            key={rowIndex} 
-            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 ${rowIndex > 0 ? 'mt-6' : ''}`}
-          >
-            {row.map((member, memberIndex) => {
-              // Alternate image position for visual variety
-              // Even rows: all left
-              // Odd rows: all right
-              const isEvenRow = rowIndex % 2 === 0
-              const imagePosition = isEvenRow ? 'left' : 'right'
 
-              return (
-                <MemberCard
-                  key={member._id}
-                  member={member}
-                  imagePosition={imagePosition as 'left' | 'right'}
-                />
-              )
-            })}
-          </div>
-        ))}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+          {members.map((member) => (
+            <MemberCard key={member._id} member={member} />
+          ))}
+        </div>
       </div>
     </div>
   )

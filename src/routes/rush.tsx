@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import Navigation from '../components/Navigation'
 import RushEventCard from '../components/RushEventCard'
 import RushContentSection from '../components/RushContentSection'
+import LoadingScreen from '../components/LoadingScreen'
 import { getUpcomingRushEvents, getAssetsByPage, urlFor, type RushEvent, type Asset } from '../lib/sanity'
 
 export const Route = createFileRoute('/rush')({
@@ -140,17 +141,7 @@ function Rush() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="bg-white relative min-h-screen">
-        <Navigation currentPage="Rush" />
-        <div className="pt-20 sm:pt-24 px-8 py-16 min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0d2f56] mx-auto mb-4"></div>
-            <p className="font-['Avenir:Roman'] text-black text-[16px]">Loading rush events...</p>
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen currentPage="Rush" cards={3} />
   }
 
     return (

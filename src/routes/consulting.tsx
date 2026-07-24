@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import Navigation from '../components/Navigation'
 import { getAssetsByPage, urlFor, type Asset } from '../lib/sanity'
+import LoadingScreen from '../components/LoadingScreen'
 import cscImage from '../assets/csc.png'
 
 export const Route = createFileRoute('/consulting')({
@@ -42,17 +43,7 @@ function Consulting() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="bg-white relative min-h-screen">
-        <Navigation currentPage="Chi Sigma Consulting" />
-        <div className="pt-20 sm:pt-24 px-4 sm:px-8 py-16 min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0d2f56] mx-auto mb-4"></div>
-            <p className="text-black text-sm sm:text-base" style={{ fontFamily: 'var(--font-avenir-roman)' }}>Loading...</p>
-          </div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen currentPage="Chi Sigma Consulting" cards={6} />
   }
 
   return (

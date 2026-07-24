@@ -334,7 +334,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
           className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
           style={{
             backgroundPositionY: '100%',
-            backgroundImage: `linear-gradient(187.806deg, rgba(0, 0, 0, 0) 45.836%, rgb(13, 47, 86) 85.508%), linear-gradient(90deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.55) 100%), url(${landingImage})`
+            backgroundImage: `linear-gradient(187.806deg, rgba(0, 0, 0, 0) 45.836%, rgb(13, 47, 86) 85.508%), linear-gradient(90deg, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.7) 100%), url(${landingImage})`
           }}
         />
         
@@ -369,7 +369,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
         </div>
 
         {/* Main Hero Content - Following Figma Design */}
-        <div className="absolute font-['PP_Editorial_New'] leading-none left-8 not-italic text-white text-[17vw] text-nowrap bottom-[10%] whitespace-pre" style={{ letterSpacing: '-4.4px' }}>
+        <div className="absolute font-['PP_Editorial_New'] leading-none left-8 not-italic text-white text-[12vw] text-nowrap bottom-[10%] whitespace-pre" style={{ letterSpacing: '-3px' }}>
           <p className="mb-0">ALPHA </p>
           <p>KAPPA PSI</p>
         </div>
@@ -457,7 +457,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
                         {/* President Name Below Image */}
                         <div className="mt-4 text-right">
                           <p className="font-['PP_Editorial_New'] text-white text-lg">Rebecca Silva</p>
-                          <p className="font-['Avenir:Roman'] text-yellow-500 text-sm mt-1">President</p>
+                          <p className="font-instrument-italic text-yellow-500 text-base mt-1">President</p>
                         </div>
                       </div>
                     )
@@ -474,7 +474,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
                         {/* Name below even on error */}
                         <div className="mt-4 text-right">
                           <p className="font-['PP_Editorial_New'] text-white text-lg">Rebecca Silva</p>
-                          <p className="font-['Avenir:Roman'] text-yellow-500 text-sm mt-1">President</p>
+                          <p className="font-instrument-italic text-yellow-500 text-base mt-1">President</p>
                         </div>
                       </div>
                     )
@@ -488,7 +488,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
                   {/* Placeholder name */}
                   <div className="mt-4 text-right">
                     <p className="font-['PP_Editorial_New'] text-white text-lg">Rebecca Silva</p>
-                    <p className="font-['Avenir:Roman'] text-yellow-500 text-sm mt-1">President</p>
+                    <p className="font-instrument-italic text-yellow-500 text-base mt-1">President</p>
                   </div>
                 </div>
               )}
@@ -550,11 +550,11 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
         </div>
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16">
-            <p className="text-[#c4c4c4] text-sm font-['Avenir:Roman'] font-normal mb-16">(About Us)</p>
+            <p className="text-[#c4c4c4] text-base font-instrument-italic mb-16">(About Us)</p>
             
             <div className="mb-16">
               <p className="text-white text-4xl sm:text-3xl md:text-4xl lg:text-5xl font-['PP_Editorial_New'] leading-[1.1] max-w-4xl mx-auto" style={{ letterSpacing: '-0.96px' }}>
-                For the past 12 years, Alpha Kappa Psi's Chi Sigma chapter has been shaping the business leaders of tomorrow.
+                For the past 12 years, Alpha Kappa Psi's Chi Sigma chapter has been shaping the <span className="font-instrument-italic">business leaders of tomorrow</span>.
               </p>
             </div>
 
@@ -631,7 +631,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
           </div>
           
           <div className="text-center">
-            <p className="text-[#c4c4c4] text-sm font-['Avenir:Roman'] font-normal">(Continued)</p>
+            <p className="text-[#c4c4c4] text-base font-instrument-italic">(Continued)</p>
           </div>
         </div>
       </div>

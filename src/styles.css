@@ -3,9 +3,24 @@
 /* Import fonts from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
 
 /* Import system fonts that are close to Avenir */
 @import "tw-animate-css";
+
+/* Skeleton shimmer for loading states */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #edeff2 25%, #e0e4ea 37%, #edeff2 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+}
 
 /* Gallery painting animation with delay */
 @keyframes fadeOutScaleDelayed {
@@ -117,6 +132,12 @@ select,
 /* Ensure PP Editorial New is preserved */
 [class*="font-['PP_Editorial_New"] {
   font-family: 'PP Editorial New' !important;
+}
+
+/* Instrument Serif italic — tasteful accent (needs !important to beat the rules above) */
+.font-instrument-italic {
+  font-family: 'Instrument Serif', serif !important;
+  font-style: italic !important;
 }
 
 /* Local font declarations for PP Editorial New */
