@@ -1,5 +1,14 @@
 import { defineType, defineField } from 'sanity'
 
+const GREEK = [
+  'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta',
+  'Iota', 'Kappa', 'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho',
+  'Sigma', 'Tau', 'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega',
+]
+// Classes run through the Greek alphabet, then double up after Omega
+// (Alpha Alpha, Alpha Beta, ...). Add ...GREEK.map(l => `Beta ${l}`) etc. later.
+const PLEDGE_CLASSES = [...GREEK, ...GREEK.map((l) => `Alpha ${l}`)]
+
 export default defineType({
   name: 'member',
   title: 'Member',
@@ -30,32 +39,7 @@ export default defineType({
       title: 'Pledge Class', 
       type: 'string',
       options: {
-        list: [
-          { title: 'Alpha', value: 'Alpha' },
-          { title: 'Beta', value: 'Beta' },
-          { title: 'Gamma', value: 'Gamma' },
-          { title: 'Delta', value: 'Delta' },
-          { title: 'Epsilon', value: 'Epsilon' },
-          { title: 'Zeta', value: 'Zeta' },
-          { title: 'Eta', value: 'Eta' },
-          { title: 'Theta', value: 'Theta' },
-          { title: 'Iota', value: 'Iota' },
-          { title: 'Kappa', value: 'Kappa' },
-          { title: 'Lambda', value: 'Lambda' },
-          { title: 'Mu', value: 'Mu' },
-          { title: 'Nu', value: 'Nu' },
-          { title: 'Xi', value: 'Xi' },
-          { title: 'Omicron', value: 'Omicron' },
-          { title: 'Pi', value: 'Pi' },
-          { title: 'Rho', value: 'Rho' },
-          { title: 'Sigma', value: 'Sigma' },
-          { title: 'Tau', value: 'Tau' },
-          { title: 'Upsilon', value: 'Upsilon' },
-          { title: 'Phi', value: 'Phi' },
-          { title: 'Chi', value: 'Chi' },
-          { title: 'Psi', value: 'Psi' },
-          { title: 'Omega', value: 'Omega' }
-        ]
+        list: PLEDGE_CLASSES.map((c) => ({ title: c, value: c })),
       },
       validation: Rule => Rule.required()
     }),

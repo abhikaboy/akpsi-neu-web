@@ -9,6 +9,17 @@ export const Route = createFileRoute('/brothers')({
   component: Brothers,
 })
 
+// Class order mirrors the Sanity schema: Greek alphabet, then doubles after
+// Omega (Alpha Alpha, ...). Keep in sync with sanity/schemaTypes/memberType.ts.
+const GREEK = [
+  'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta',
+  'Iota', 'Kappa', 'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho',
+  'Sigma', 'Tau', 'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega',
+]
+const PLEDGE_CLASS_ORDER: Record<string, number> = Object.fromEntries(
+  [...GREEK, ...GREEK.map((l) => `Alpha ${l}`)].map((c, i) => [c, i + 1]),
+)
+
 // Type for our members dictionary
 type MembersByClass = Record<string, Member[]>
 
@@ -100,18 +111,9 @@ function Brothers() {
       {/* Render all class sections dynamically */}
       {Object.entries(membersByClass)
         .sort(([a], [b]) => {
-          // Greek alphabet order (Alpha = 1, Beta = 2, ..., Omega = 24)
-          const greekOrder: Record<string, number> = {
-            'Alpha': 1, 'Beta': 2, 'Gamma': 3, 'Delta': 4, 'Epsilon': 5, 'Zeta': 6,
-            'Eta': 7, 'Theta': 8, 'Iota': 9, 'Kappa': 10, 'Lambda': 11, 'Mu': 12,
-            'Nu': 13, 'Xi': 14, 'Omicron': 15, 'Pi': 16, 'Rho': 17, 'Sigma': 18,
-            'Tau': 19, 'Upsilon': 20, 'Phi': 21, 'Chi': 22, 'Psi': 23, 'Omega': 24
-          }
-          
-          const orderA = greekOrder[a] || 0  // Unknown classes go to the end
-          const orderB = greekOrder[b] || 0
-          
-          // Sort in descending order (latest class first)
+          // Unknown classes (order 0) go to the end; latest class first.
+          const orderA = PLEDGE_CLASS_ORDER[a] || 0
+          const orderB = PLEDGE_CLASS_ORDER[b] || 0
           return orderB - orderA
         })
         .map(([className, members]) => (
