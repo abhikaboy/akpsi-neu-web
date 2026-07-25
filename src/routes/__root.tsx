@@ -12,7 +12,9 @@ function RootComponent() {
   return (
     <>
       <main className="min-h-screen">
-        <Outlet />
+        <div key={location.pathname} className="page-enter">
+          <Outlet />
+        </div>
       </main>
       {!isRushPage && <Footer />}
       <Toaster position="bottom-right" />

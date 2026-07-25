@@ -8,6 +8,20 @@
 /* Import system fonts that are close to Avenir */
 @import "tw-animate-css";
 
+/* Page transition — fade in on each navigation.
+   Opacity only: a transform here would reparent the fixed nav to this
+   wrapper and break it. */
+@keyframes pageEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.page-enter {
+  animation: pageEnter 0.35s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-enter { animation: none; }
+}
+
 /* Skeleton shimmer for loading states */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
