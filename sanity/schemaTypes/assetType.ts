@@ -54,6 +54,21 @@ export default defineType({
       validation: Rule => Rule.required().max(100).error('Title is required and must be under 100 characters')
     }),
     defineField({
+      name: 'slot',
+      title: 'Site Slot',
+      type: 'string',
+      description: 'Pick this if the site looks for this exact asset by a fixed name (e.g. the Rush page banner). Leave blank for general gallery images. Setting this makes the match immune to title typos/renames.',
+      options: {
+        list: [
+          { title: 'Rush — Banner Image', value: 'rush-banner' },
+          { title: 'Rush — Video', value: 'rush-video' },
+          { title: 'Global — President Photo', value: 'president' },
+          { title: 'Global — Business Leaders Photo', value: 'business-leaders' },
+          { title: 'Consulting — Hero Image', value: 'hero' },
+        ],
+      },
+    }),
+    defineField({
       name: 'description',
       title: 'Description',
       type: 'text',

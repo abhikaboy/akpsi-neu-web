@@ -4,21 +4,11 @@ import Navigation from '../components/Navigation'
 import ClassSection from '../components/ClassSection'
 import LoadingScreen from '../components/LoadingScreen'
 import { getMembers, getAssetsByPage, type Member, type Asset } from '../lib/sanity'
+import { sortByClassOrder } from '../lib/pledgeClasses'
 
 export const Route = createFileRoute('/brothers')({
   component: Brothers,
 })
-
-// Class order mirrors the Sanity schema: Greek alphabet, then doubles after
-// Omega (Alpha Alpha, ...). Keep in sync with sanity/schemaTypes/memberType.ts.
-const GREEK = [
-  'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta',
-  'Iota', 'Kappa', 'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho',
-  'Sigma', 'Tau', 'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega',
-]
-const PLEDGE_CLASS_ORDER: Record<string, number> = Object.fromEntries(
-  [...GREEK, ...GREEK.map((l) => `Alpha ${l}`)].map((c, i) => [c, i + 1]),
-)
 
 // Type for our members dictionary
 type MembersByClass = Record<string, Member[]>
@@ -47,8 +37,10 @@ function Brothers() {
         console.log('Members assets fetched:', membersData)
         console.log('Global assets fetched:', globalData)
         
-        // Group members by class using reduce
-        const groupedMembers = allMembers.reduce<MembersByClass>((acc, member) => {
+        // Group active (non-alumni) members by class using reduce
+        const groupedMembers = allMembers
+          .filter((member) => !member.isAlumni)
+          .reduce<MembersByClass>((acc, member) => {
           const className = member.pledgeClass || 'Unknown'
           if (!acc[className]) {
             acc[className] = []
@@ -110,12 +102,7 @@ function Brothers() {
 
       {/* Render all class sections dynamically */}
       {Object.entries(membersByClass)
-        .sort(([a], [b]) => {
-          // Unknown classes (order 0) go to the end; latest class first.
-          const orderA = PLEDGE_CLASS_ORDER[a] || 0
-          const orderB = PLEDGE_CLASS_ORDER[b] || 0
-          return orderB - orderA
-        })
+        .sort(sortByClassOrder)
         .map(([className, members]) => (
           <ClassSection
             key={className}

@@ -38,6 +38,7 @@ export interface Member {
   graduationYear: number
   email: string
   linkedin: string
+  isAlumni?: boolean
 }
 
 export interface RushEvent {
@@ -52,6 +53,7 @@ export interface RushEvent {
 
 export interface Asset {
   _id: string
+  _updatedAt?: string
   picture?: {
     _type: 'file'
     asset: {
@@ -62,9 +64,32 @@ export interface Asset {
   asset_type: 'image' | 'video' | 'audio' | 'pdf' | 'presentation' | 'spreadsheet' | 'link' | 'social' | 'other'
   page: 'home' | 'about' | 'members' | 'alumni' | 'rush' | 'consulting' | 'events' | 'global'
   title: string
+  slot?: string
   description?: string
   isActive: boolean
   order?: number
+}
+
+// Finds the asset pinned to a fixed site slot (e.g. 'rush-banner'). Prefers the
+// explicit `slot` field; if duplicates share a slot, the most recently edited
+// one wins so replacing an asset in Studio doesn't get shadowed by a stale one.
+// Falls back to the old title-substring match for assets that predate the
+// `slot` field, so existing content keeps working until it's tagged.
+export function findAssetBySlot(assets: Asset[], slot: string, legacyTitleSubstring?: string): Asset | undefined {
+  const bySlot = assets.filter((a) => a.slot === slot)
+  if (bySlot.length > 0) {
+    return [...bySlot].sort((a, b) => (b._updatedAt ?? '').localeCompare(a._updatedAt ?? ''))[0]
+  }
+  return legacyTitleSubstring
+    ? assets.find((a) => a.title.toLowerCase().includes(legacyTitleSubstring))
+    : undefined
+}
+
+// Companion to findAssetBySlot, for excluding a slotted asset from generic
+// "everything else" listings (e.g. the rush page's gallery of other images).
+export function assetMatchesSlot(asset: Asset, slot: string, legacyTitleSubstring?: string): boolean {
+  if (asset.slot) return asset.slot === slot
+  return legacyTitleSubstring ? asset.title.toLowerCase().includes(legacyTitleSubstring) : false
 }
 
 export interface Copy {

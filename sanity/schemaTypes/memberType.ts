@@ -55,10 +55,17 @@ export default defineType({
       type: 'string',
       validation: Rule => Rule.required().email()
     }),
-    defineField({ 
-      name: 'linkedin', 
-      title: 'LinkedIn URL', 
+    defineField({
+      name: 'linkedin',
+      title: 'LinkedIn URL',
       type: 'url'
+    }),
+    defineField({
+      name: 'isAlumni',
+      title: 'Is Alumni',
+      type: 'boolean',
+      description: 'Hides this member from the Brothers page and lists them under Alumni instead.',
+      initialValue: false,
     }),
   ],
   preview: {

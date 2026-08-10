@@ -4,7 +4,7 @@ import Navigation from '../components/Navigation'
 import RushEventCard from '../components/RushEventCard'
 import RushContentSection from '../components/RushContentSection'
 import LoadingScreen from '../components/LoadingScreen'
-import { getUpcomingRushEvents, getAssetsByPage, urlFor, type RushEvent, type Asset } from '../lib/sanity'
+import { getUpcomingRushEvents, getAssetsByPage, urlFor, findAssetBySlot, assetMatchesSlot, type RushEvent, type Asset } from '../lib/sanity'
 
 export const Route = createFileRoute('/rush')({
   component: Rush,
@@ -160,8 +160,8 @@ function Rush() {
                 backgroundPositionY: '90%',
               backgroundImage: `linear-gradient(194.661deg, rgba(0, 0, 0, 0) 45.836%, rgb(13, 47, 86) 85.508%), linear-gradient(90deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 100%), url('${
                 (() => {
-                  const rushBannerAsset = rushAssets.find(asset => asset.asset_type === 'image' && asset.title.toLowerCase().includes('rush-banner')) ||
-                                         globalAssets.find(asset => asset.asset_type === 'image' && asset.title.toLowerCase().includes('rush-banner'))
+                  const rushBannerAsset = findAssetBySlot(rushAssets.filter(a => a.asset_type === 'image'), 'rush-banner', 'rush-banner') ||
+                                         findAssetBySlot(globalAssets.filter(a => a.asset_type === 'image'), 'rush-banner', 'rush-banner')
                   if (rushBannerAsset?.picture) {
                     return urlFor(rushBannerAsset.picture).width(600).height(800).url()
                   }
@@ -236,8 +236,8 @@ function Rush() {
         <div className="pl-6 pr-8 space-y-8 pb-32">
           {/* Dynamic Image Cards from Assets */}
           {rushAssets
-            .filter(asset => asset.asset_type === 'image' && !asset.title.toLowerCase().includes('rush-banner'))
-            .concat(globalAssets.filter(asset => asset.asset_type === 'image' && !asset.title.toLowerCase().includes('rush-banner')))
+            .filter(asset => asset.asset_type === 'image' && !assetMatchesSlot(asset, 'rush-banner', 'rush-banner'))
+            .concat(globalAssets.filter(asset => asset.asset_type === 'image' && !assetMatchesSlot(asset, 'rush-banner', 'rush-banner')))
             .slice(0, 5) // Limit to 5 images
             .map((asset, index) => (
               <div 
@@ -253,8 +253,8 @@ function Rush() {
             ))}
           
           {/* Fallback placeholder cards if no assets */}
-          {rushAssets.filter(asset => asset.asset_type === 'image' && !asset.title.toLowerCase().includes('rush-banner')).length === 0 &&
-           globalAssets.filter(asset => asset.asset_type === 'image' && !asset.title.toLowerCase().includes('rush-banner')).length === 0 &&
+          {rushAssets.filter(asset => asset.asset_type === 'image' && !assetMatchesSlot(asset, 'rush-banner', 'rush-banner')).length === 0 &&
+           globalAssets.filter(asset => asset.asset_type === 'image' && !assetMatchesSlot(asset, 'rush-banner', 'rush-banner')).length === 0 &&
            [...Array(0)].map((_, index) => (
             <div 
               key={`fallback-${index}`}

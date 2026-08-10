@@ -5,7 +5,7 @@ import landingImage from '../assets/landing.png'
 import patternImage from '../assets/pattern-720p-16x9.png'
 import rushVideoLocal from '../assets/rushvideof25.MOV?url'
 import Navigation from './Navigation'
-import { type Asset, type Copy, urlFor, getAssetByTitle, getCopyByTitle, getFileUrl, getImageUrlFromFileAsset, getVideoMimeType, listAllAssets } from '../lib/sanity'
+import { type Asset, type Copy, urlFor, getAssetByTitle, getCopyByTitle, getFileUrl, getImageUrlFromFileAsset, getVideoMimeType, listAllAssets, findAssetBySlot } from '../lib/sanity'
 
 interface SnapSectionsProps {
   onSnapComplete?: () => void
@@ -63,10 +63,8 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
         console.log('Asset titles:', allAssets.map(asset => asset.title))
         
         // Try to find rush-video asset in the passed assets first
-        let rushVideoAsset = allAssets.find(asset => 
-          asset.title.toLowerCase() === 'rush-video'
-        )
-        
+        let rushVideoAsset = findAssetBySlot(allAssets, 'rush-video', 'rush-video')
+
         // If not found, try variations
         if (!rushVideoAsset) {
           rushVideoAsset = allAssets.find(asset => 
@@ -132,9 +130,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
         const allAssets = [...(assets || []), ...(globalAssets || [])]
         console.log('🔍 Searching for president asset in:', allAssets.map(a => ({ title: a.title, id: a._id, picture: a.picture })))
         
-        let presidentAssetFound: Asset | null = allAssets.find(asset => 
-          asset.title.toLowerCase() === 'president'
-        ) || null
+        let presidentAssetFound: Asset | null = findAssetBySlot(allAssets, 'president', 'president') || null
         
         // If not found in passed assets, try fetching directly from Sanity
         if (!presidentAssetFound) {
@@ -171,8 +167,8 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
   useEffect(() => {
     console.log('SnapSections assets:', assets)
     console.log('SnapSections globalAssets:', globalAssets)
-    const businessLeadersAsset = assets?.find(asset => asset.title.toLowerCase() === 'business-leaders') ||
-                                 globalAssets?.find(asset => asset.title.toLowerCase() === 'business-leaders')
+    const businessLeadersAsset = findAssetBySlot(assets ?? [], 'business-leaders', 'business-leaders') ||
+                                 findAssetBySlot(globalAssets ?? [], 'business-leaders', 'business-leaders')
     console.log('Found business-leaders asset:', businessLeadersAsset)
     if (businessLeadersAsset?.picture) {
       console.log('Generated image URL:', urlFor(businessLeadersAsset.picture).width(642).height(401).url())
@@ -610,8 +606,8 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
                        style={{
                          backgroundImage: `url('${
                            (() => {
-                             const businessLeadersAsset = assets?.find(asset => asset.title.toLowerCase() === 'business-leaders') ||
-                                                         globalAssets?.find(asset => asset.title.toLowerCase() === 'business-leaders')
+                             const businessLeadersAsset = findAssetBySlot(assets ?? [], 'business-leaders', 'business-leaders') ||
+                                                         findAssetBySlot(globalAssets ?? [], 'business-leaders', 'business-leaders')
                              if (businessLeadersAsset?.picture) {
                                return urlFor(businessLeadersAsset.picture).width(642).height(401).url()
                              }
