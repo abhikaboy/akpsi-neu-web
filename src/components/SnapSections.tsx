@@ -5,7 +5,7 @@ import landingImage from '../assets/landing.png'
 import patternImage from '../assets/pattern-720p-16x9.png'
 import rushVideoLocal from '../assets/rushvideof25.MOV?url'
 import Navigation from './Navigation'
-import { type Asset, type Copy, urlFor, getAssetByTitle, getCopyByTitle, getFileUrl, getImageUrlFromFileAsset, getVideoMimeType, listAllAssets, findAssetBySlot } from '../lib/sanity'
+import { type Asset, type Copy, getPictureUrl, getAssetByTitle, getCopyByTitle, getFileUrl, getImageUrlFromFileAsset, getVideoMimeType, listAllAssets, findAssetBySlot } from '../lib/sanity'
 
 interface SnapSectionsProps {
   onSnapComplete?: () => void
@@ -171,7 +171,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
                                  findAssetBySlot(globalAssets ?? [], 'business-leaders', 'business-leaders')
     console.log('Found business-leaders asset:', businessLeadersAsset)
     if (businessLeadersAsset?.picture) {
-      console.log('Generated image URL:', urlFor(businessLeadersAsset.picture).width(642).height(401).url())
+      console.log('Generated image URL:', getPictureUrl(businessLeadersAsset, 642, 401))
     }
   }, [assets, globalAssets])
 
@@ -265,7 +265,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
               id: `painted-${Date.now()}-${Math.random()}`,
               x: mouseX,
               y: mouseY,
-              imageUrl: urlFor(currentAsset.picture).width(200).height(200).url(),
+              imageUrl: getPictureUrl(currentAsset, 200, 200),
               timestamp: Date.now()
             }
             
@@ -609,7 +609,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
                              const businessLeadersAsset = findAssetBySlot(assets ?? [], 'business-leaders', 'business-leaders') ||
                                                          findAssetBySlot(globalAssets ?? [], 'business-leaders', 'business-leaders')
                              if (businessLeadersAsset?.picture) {
-                               return urlFor(businessLeadersAsset.picture).width(642).height(401).url()
+                               return getPictureUrl(businessLeadersAsset, 642, 401)
                              }
                              return 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80'
                            })()

@@ -70,6 +70,23 @@ export interface Asset {
   order?: number
 }
 
+// Asset.picture is a generic Sanity `file` field (it has to hold PDFs, videos,
+// etc. too), so its uploads land as sanity.fileAsset refs ('file-<hash>-<ext>'),
+// not sanity.imageAsset refs ('image-<hash>-<dims>-<ext>'). urlFor() only
+// understands the latter and throws "Malformed asset _ref" on the former.
+// This picks the right code path based on the actual ref prefix instead of
+// assuming every picture is an image-type asset.
+export function getPictureUrl(asset: Asset, width?: number, height?: number): string {
+  if (!asset.picture) return ''
+  if (asset.picture.asset?._ref?.startsWith('image-')) {
+    let builder = urlFor(asset.picture)
+    if (width) builder = builder.width(width)
+    if (height) builder = builder.height(height)
+    return builder.url()
+  }
+  return getImageUrlFromFileAsset(asset, width, height) ?? ''
+}
+
 // Finds the asset pinned to a fixed site slot (e.g. 'rush-banner'). Prefers the
 // explicit `slot` field; if duplicates share a slot, the most recently edited
 // one wins so replacing an asset in Studio doesn't get shadowed by a stale one.

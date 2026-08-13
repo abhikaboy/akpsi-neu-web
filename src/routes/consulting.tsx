@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import Navigation from '../components/Navigation'
-import { getAssetsByPage, urlFor, findAssetBySlot, type Asset } from '../lib/sanity'
+import { getAssetsByPage, getPictureUrl, findAssetBySlot, type Asset } from '../lib/sanity'
 import LoadingScreen from '../components/LoadingScreen'
 import cscImage from '../assets/csc.png'
 
@@ -62,7 +62,7 @@ function Consulting() {
                 const heroAsset = findAssetBySlot(consultingAssets.filter(a => a.asset_type === 'image'), 'hero', 'hero') ||
                                  findAssetBySlot(globalAssets.filter(a => a.asset_type === 'image'), 'hero', 'hero')
                 if (heroAsset?.picture) {
-                  return urlFor(heroAsset.picture).width(1280).height(854).url()
+                  return getPictureUrl(heroAsset, 1280, 854)
                 }
                 return cscImage
               })()

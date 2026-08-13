@@ -4,7 +4,7 @@ import Navigation from '../components/Navigation'
 import RushEventCard from '../components/RushEventCard'
 import RushContentSection from '../components/RushContentSection'
 import LoadingScreen from '../components/LoadingScreen'
-import { getUpcomingRushEvents, getAssetsByPage, urlFor, findAssetBySlot, assetMatchesSlot, type RushEvent, type Asset } from '../lib/sanity'
+import { getUpcomingRushEvents, getAssetsByPage, getPictureUrl, findAssetBySlot, assetMatchesSlot, type RushEvent, type Asset } from '../lib/sanity'
 
 export const Route = createFileRoute('/rush')({
   component: Rush,
@@ -163,7 +163,7 @@ function Rush() {
                   const rushBannerAsset = findAssetBySlot(rushAssets.filter(a => a.asset_type === 'image'), 'rush-banner', 'rush-banner') ||
                                          findAssetBySlot(globalAssets.filter(a => a.asset_type === 'image'), 'rush-banner', 'rush-banner')
                   if (rushBannerAsset?.picture) {
-                    return urlFor(rushBannerAsset.picture).width(600).height(800).url()
+                    return getPictureUrl(rushBannerAsset, 600, 800)
                   }
                   return 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80'
                 })()
@@ -246,7 +246,7 @@ function Rush() {
                   index % 2 === 1 ? 'ml-16' : ''
                 }`}
                 style={{
-                  backgroundImage: `url('${asset.picture ? urlFor(asset.picture).width(299).height(170).url() : ''}')`
+                  backgroundImage: `url('${asset.picture ? getPictureUrl(asset, 299, 170) : ''}')`
                 }}
                 title={asset.title}
               />

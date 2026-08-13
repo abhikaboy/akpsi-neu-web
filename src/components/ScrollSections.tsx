@@ -3,7 +3,7 @@ import { Button } from './ui/button'
 import ValueCard from './ValueCard'
 import { PhosphorBooks } from './PhosphorBooks'
 import { useNavigate } from '@tanstack/react-router'
-import { type Asset, urlFor } from '../lib/sanity'
+import { type Asset, getPictureUrl } from '../lib/sanity'
 
 interface ScrollSectionsProps {
   assets?: Asset[]
@@ -83,7 +83,7 @@ export const ScrollSections: React.FC<ScrollSectionsProps> = ({ assets, globalAs
                   globalAssets?.find(asset => asset.title.toLowerCase() === valueTitle.toLowerCase())
     
     if (asset?.picture) {
-      return urlFor(asset.picture).width(427).height(495).url()
+      return getPictureUrl(asset, 427, 495)
     }
     return fallbackUrl
   }
