@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RushRouteImport } from './routes/rush'
 import { Route as ConsultingRouteImport } from './routes/consulting'
 import { Route as BrothersRouteImport } from './routes/brothers'
+import { Route as ApplicationRouteImport } from './routes/application'
 import { Route as AlumniRouteImport } from './routes/alumni'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -30,6 +31,11 @@ const BrothersRoute = BrothersRouteImport.update({
   path: '/brothers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApplicationRoute = ApplicationRouteImport.update({
+  id: '/application',
+  path: '/application',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlumniRoute = AlumniRouteImport.update({
   id: '/alumni',
   path: '/alumni',
@@ -44,6 +50,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alumni': typeof AlumniRoute
+  '/application': typeof ApplicationRoute
   '/brothers': typeof BrothersRoute
   '/consulting': typeof ConsultingRoute
   '/rush': typeof RushRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alumni': typeof AlumniRoute
+  '/application': typeof ApplicationRoute
   '/brothers': typeof BrothersRoute
   '/consulting': typeof ConsultingRoute
   '/rush': typeof RushRoute
@@ -59,21 +67,36 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alumni': typeof AlumniRoute
+  '/application': typeof ApplicationRoute
   '/brothers': typeof BrothersRoute
   '/consulting': typeof ConsultingRoute
   '/rush': typeof RushRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/alumni' | '/brothers' | '/consulting' | '/rush'
+  fullPaths:
+    | '/'
+    | '/alumni'
+    | '/application'
+    | '/brothers'
+    | '/consulting'
+    | '/rush'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alumni' | '/brothers' | '/consulting' | '/rush'
-  id: '__root__' | '/' | '/alumni' | '/brothers' | '/consulting' | '/rush'
+  to: '/' | '/alumni' | '/application' | '/brothers' | '/consulting' | '/rush'
+  id:
+    | '__root__'
+    | '/'
+    | '/alumni'
+    | '/application'
+    | '/brothers'
+    | '/consulting'
+    | '/rush'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlumniRoute: typeof AlumniRoute
+  ApplicationRoute: typeof ApplicationRoute
   BrothersRoute: typeof BrothersRoute
   ConsultingRoute: typeof ConsultingRoute
   RushRoute: typeof RushRoute
@@ -102,6 +125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BrothersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/application': {
+      id: '/application'
+      path: '/application'
+      fullPath: '/application'
+      preLoaderRoute: typeof ApplicationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/alumni': {
       id: '/alumni'
       path: '/alumni'
@@ -122,6 +152,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlumniRoute: AlumniRoute,
+  ApplicationRoute: ApplicationRoute,
   BrothersRoute: BrothersRoute,
   ConsultingRoute: ConsultingRoute,
   RushRoute: RushRoute,

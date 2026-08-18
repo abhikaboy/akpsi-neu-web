@@ -121,6 +121,17 @@ export interface Copy {
   notes?: string
 }
 
+export interface ApplicationQuestion {
+  _id: string
+  cycle: string
+  label: string
+  fieldType: 'text' | 'textarea' | 'select' | 'file'
+  options?: string[]
+  required: boolean
+  order?: number
+  isActive: boolean
+}
+
 // Test Sanity connection
 export async function testSanityConnection() {
   try {
@@ -386,6 +397,20 @@ export function getImageUrlFromFileAsset(asset: any, width?: number, height?: nu
   
   console.error('🚨 No usable URL or reference found')
   return null
+}
+
+// Application question query functions
+export async function getApplicationQuestions(cycle: string): Promise<ApplicationQuestion[]> {
+  try {
+    const result = await client.fetch(
+      '*[_type == "applicationQuestion" && isActive == true && cycle == $cycle] | order(order asc, label asc)',
+      { cycle }
+    )
+    return result
+  } catch (error) {
+    console.error(`Error fetching application questions for cycle ${cycle}:`, error)
+    throw error
+  }
 }
 
 // Copy query functions

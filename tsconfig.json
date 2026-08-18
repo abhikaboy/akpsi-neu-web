@@ -1,6 +1,6 @@
 {
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["sanity/**/*"],
+  "exclude": ["sanity/**/*", "api/**/*"],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",

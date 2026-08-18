@@ -30,7 +30,8 @@ export default function Navigation({ currentPage, mode = 'dark' }: NavigationPro
     { name: 'Alumni', path: '/alumni' },
     { name: 'Members', path: '/brothers' },
     { name: 'Rush', path: '/rush' },
-    { name: 'Chi Sigma Consulting', path: '/consulting' }
+    { name: 'Chi Sigma Consulting', path: '/consulting' },
+    { name: 'Apply', path: '/application' }
   ]
 
   return (
