@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AdminGate from "../components/admin/AdminGate";
+import CandidateChat from "../components/admin/CandidateChat";
+import PresenceIndicator from "../components/admin/PresenceIndicator";
 import {
 	findImageAnswer,
 	Headshot,
@@ -140,7 +142,7 @@ function sortValue(
 }
 
 function AdminDeliberate() {
-	return <AdminGate>{() => <Deliberation />}</AdminGate>;
+	return <AdminGate>{(user) => <Deliberation viewerEmail={user.email} />}</AdminGate>;
 }
 
 /**
@@ -148,7 +150,7 @@ function AdminDeliberate() {
  * application answers alongside every eval and interview we hold on them, so
  * deliberations don't need five tabs open.
  */
-function Deliberation() {
+function Deliberation({ viewerEmail }: { viewerEmail: string }) {
 	const {
 		cycle,
 		label: cycleLabel,
@@ -460,6 +462,8 @@ function Deliberation() {
 						<ProfileRow
 							key={profile.email}
 							profile={profile}
+							cycle={cycle ?? ""}
+							viewerEmail={viewerEmail}
 							open={expanded === profile.email}
 							onToggle={() =>
 								setExpanded((prev) =>
@@ -476,10 +480,14 @@ function Deliberation() {
 
 function ProfileRow({
 	profile,
+	cycle,
+	viewerEmail,
 	open,
 	onToggle,
 }: {
 	profile: DeliberationProfile;
+	cycle: string;
+	viewerEmail: string;
 	open: boolean;
 	onToggle: () => void;
 }) {
@@ -562,6 +570,14 @@ function ProfileRow({
 			{open && (
 				<CardContent className="space-y-6">
 					<Separator />
+
+					{cycle && (
+						<PresenceIndicator
+							cycle={cycle}
+							candidateEmail={profile.email}
+							viewerEmail={viewerEmail}
+						/>
+					)}
 
 					<section>
 						<h3 className="text-sm font-semibold mb-3">Application</h3>
@@ -665,6 +681,18 @@ function ProfileRow({
 							</section>
 						);
 					})}
+
+						{cycle && (
+							<section>
+								<Separator className="mb-6" />
+								<h3 className="text-sm font-semibold mb-3">Discussion</h3>
+								<CandidateChat
+									cycle={cycle}
+									candidateEmail={profile.email}
+									viewerEmail={viewerEmail}
+								/>
+							</section>
+						)}
 				</CardContent>
 			)}
 		</Card>
