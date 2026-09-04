@@ -4,6 +4,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
 
 /* Import system fonts that are close to Avenir */
 @import "tw-animate-css";
@@ -146,6 +147,15 @@ select,
 /* Ensure PP Editorial New is preserved */
 [class*="font-['PP_Editorial_New"] {
   font-family: 'PP Editorial New' !important;
+}
+
+/* The /admin section uses Poppins instead of Avenir — needs !important to beat the rules above */
+.admin-shell,
+.admin-shell button,
+.admin-shell input,
+.admin-shell textarea,
+.admin-shell select {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif !important;
 }
 
 /* Instrument Serif italic — tasteful accent (needs !important to beat the rules above) */

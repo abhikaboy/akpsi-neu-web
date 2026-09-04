@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import Navigation from '../components/Navigation'
+import NameCombobox from '../components/NameCombobox'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
@@ -14,20 +15,27 @@ import {
   SelectValue,
 } from '../components/ui/select'
 import { getApplicationQuestions, type ApplicationQuestion } from '../lib/sanity'
-import { getApplicationCycleOptions } from '../lib/applicationCycles'
+import { useActiveCycle } from '../lib/activeCycle'
 import { submitApplication } from '../lib/applications'
 import { uploadApplicationFile } from '../lib/uploads'
+import { fetchRushees, type Rushee } from '../lib/rushCheckin'
 
 export const Route = createFileRoute('/application')({
   component: Application,
 })
 
 function Application() {
-  const cycleOptions = useMemo(() => getApplicationCycleOptions(), [])
-  const [cycle, setCycle] = useState(cycleOptions[0]?.value ?? '')
+  const {
+    cycle,
+    label: cycleLabel,
+    loading: cycleLoading,
+    error: cycleError,
+  } = useActiveCycle()
   const [questions, setQuestions] = useState<ApplicationQuestion[]>([])
   const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [rushees, setRushees] = useState<Rushee[]>([])
   const [name, setName] = useState('')
+  const [rusheeId, setRusheeId] = useState('')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -36,14 +44,26 @@ function Application() {
   const [fileNames, setFileNames] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    if (!cycle) return
+    fetchRushees()
+      .then(setRushees)
+      .catch(() => {
+        /* the search combo just degrades to a plain name field */
+      })
+  }, [])
+
+  useEffect(() => {
+    if (cycleLoading) return
+    if (!cycle) {
+      setLoading(false)
+      return
+    }
     setLoading(true)
     setAnswers({})
     getApplicationQuestions(cycle)
       .then(setQuestions)
       .catch(() => setError('Failed to load application questions.'))
       .finally(() => setLoading(false))
-  }, [cycle])
+  }, [cycle, cycleLoading])
 
   const setAnswer = (id: string, value: string) => setAnswers(prev => ({ ...prev, [id]: value }))
 
@@ -82,11 +102,16 @@ function Application() {
     }
     setSubmitting(true)
     try {
+      if (!cycle) {
+        toast.error('Applications are not open right now.')
+        return
+      }
       await submitApplication({
         cycle,
         name,
         email,
         answers: questions.map(q => ({ label: q.label, value: answers[q._id] ?? '' })),
+        rusheeId: rusheeId || undefined,
       })
       toast.success('Application submitted!')
     } catch (err) {
@@ -109,30 +134,13 @@ function Application() {
             Apply
           </h1>
           <p className="text-muted-foreground mb-8">
-            Interested in joining Alpha Kappa Psi? Select an application cycle and fill out the form below.
+            Interested in joining Alpha Kappa Psi? Fill out the form below
+            {cycleLabel ? ` to apply for ${cycleLabel}` : ''}.
           </p>
 
-          <div className="mb-8 max-w-xs">
-            <Label htmlFor="cycle" className="mb-2 block">
-              Application Cycle
-            </Label>
-            <Select value={cycle} onValueChange={setCycle}>
-              <SelectTrigger id="cycle" className="w-full">
-                <SelectValue placeholder="Select a cycle" />
-              </SelectTrigger>
-              <SelectContent>
-                {cycleOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {error && (
+          {(cycleError ?? error) && (
             <div className="p-3 mb-6 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-              {error}
+              {cycleError ?? error}
             </div>
           )}
 
@@ -142,9 +150,9 @@ function Application() {
                 <div key={i} className="skeleton h-16 rounded" />
               ))}
             </div>
-          ) : questions.length === 0 ? (
+          ) : !cycle || questions.length === 0 ? (
             <p className="text-muted-foreground text-sm border rounded-lg p-6">
-              Applications for this cycle aren't open yet. Check back soon.
+              Applications aren't open yet. Check back soon.
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -152,7 +160,22 @@ function Application() {
                 <Label htmlFor="name" className="mb-2 block">
                   Name<span className="text-destructive"> *</span>
                 </Label>
-                <Input id="name" value={name} onChange={e => setName(e.target.value)} />
+                <NameCombobox
+                  inputId="name"
+                  people={rushees}
+                  query={name}
+                  onQueryChange={value => {
+                    setName(value)
+                    setRusheeId('')
+                  }}
+                  selectedId={rusheeId}
+                  onSelect={person => {
+                    setRusheeId(person._id)
+                    setName(person.name)
+                  }}
+                  placeholder="Start typing your name..."
+                  emptyMessage="No matches. That's OK, just keep your typed name above."
+                />
               </div>
               <div>
                 <Label htmlFor="email" className="mb-2 block">

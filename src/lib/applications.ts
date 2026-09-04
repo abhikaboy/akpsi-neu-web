@@ -3,6 +3,7 @@ export interface ApplicationSubmission {
   name: string
   email: string
   answers: { label: string; value: string }[]
+  rusheeId?: string
 }
 
 export async function submitApplication(submission: ApplicationSubmission): Promise<void> {

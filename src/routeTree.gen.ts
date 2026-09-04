@@ -9,13 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RushCheckinRouteImport } from './routes/rush-checkin'
 import { Route as RushRouteImport } from './routes/rush'
 import { Route as ConsultingRouteImport } from './routes/consulting'
 import { Route as BrothersRouteImport } from './routes/brothers'
 import { Route as ApplicationRouteImport } from './routes/application'
 import { Route as AlumniRouteImport } from './routes/alumni'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRushEvalsRouteImport } from './routes/admin.rush-evals'
+import { Route as AdminMyEvalsRouteImport } from './routes/admin.my-evals'
+import { Route as AdminInvitationalEvalsRouteImport } from './routes/admin.invitational-evals'
+import { Route as AdminInterviewsRouteImport } from './routes/admin.interviews'
+import { Route as AdminEvalsRouteImport } from './routes/admin.evals'
+import { Route as AdminDeliberateRouteImport } from './routes/admin.deliberate'
+import { Route as AdminApplicationsRouteImport } from './routes/admin.applications'
 
+const RushCheckinRoute = RushCheckinRouteImport.update({
+  id: '/rush-checkin',
+  path: '/rush-checkin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RushRoute = RushRouteImport.update({
   id: '/rush',
   path: '/rush',
@@ -46,6 +59,41 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRushEvalsRoute = AdminRushEvalsRouteImport.update({
+  id: '/admin/rush-evals',
+  path: '/admin/rush-evals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminMyEvalsRoute = AdminMyEvalsRouteImport.update({
+  id: '/admin/my-evals',
+  path: '/admin/my-evals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminInvitationalEvalsRoute = AdminInvitationalEvalsRouteImport.update({
+  id: '/admin/invitational-evals',
+  path: '/admin/invitational-evals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminInterviewsRoute = AdminInterviewsRouteImport.update({
+  id: '/admin/interviews',
+  path: '/admin/interviews',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminEvalsRoute = AdminEvalsRouteImport.update({
+  id: '/admin/evals',
+  path: '/admin/evals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDeliberateRoute = AdminDeliberateRouteImport.update({
+  id: '/admin/deliberate',
+  path: '/admin/deliberate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminApplicationsRoute = AdminApplicationsRouteImport.update({
+  id: '/admin/applications',
+  path: '/admin/applications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +102,14 @@ export interface FileRoutesByFullPath {
   '/brothers': typeof BrothersRoute
   '/consulting': typeof ConsultingRoute
   '/rush': typeof RushRoute
+  '/rush-checkin': typeof RushCheckinRoute
+  '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/deliberate': typeof AdminDeliberateRoute
+  '/admin/evals': typeof AdminEvalsRoute
+  '/admin/interviews': typeof AdminInterviewsRoute
+  '/admin/invitational-evals': typeof AdminInvitationalEvalsRoute
+  '/admin/my-evals': typeof AdminMyEvalsRoute
+  '/admin/rush-evals': typeof AdminRushEvalsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +118,14 @@ export interface FileRoutesByTo {
   '/brothers': typeof BrothersRoute
   '/consulting': typeof ConsultingRoute
   '/rush': typeof RushRoute
+  '/rush-checkin': typeof RushCheckinRoute
+  '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/deliberate': typeof AdminDeliberateRoute
+  '/admin/evals': typeof AdminEvalsRoute
+  '/admin/interviews': typeof AdminInterviewsRoute
+  '/admin/invitational-evals': typeof AdminInvitationalEvalsRoute
+  '/admin/my-evals': typeof AdminMyEvalsRoute
+  '/admin/rush-evals': typeof AdminRushEvalsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +135,14 @@ export interface FileRoutesById {
   '/brothers': typeof BrothersRoute
   '/consulting': typeof ConsultingRoute
   '/rush': typeof RushRoute
+  '/rush-checkin': typeof RushCheckinRoute
+  '/admin/applications': typeof AdminApplicationsRoute
+  '/admin/deliberate': typeof AdminDeliberateRoute
+  '/admin/evals': typeof AdminEvalsRoute
+  '/admin/interviews': typeof AdminInterviewsRoute
+  '/admin/invitational-evals': typeof AdminInvitationalEvalsRoute
+  '/admin/my-evals': typeof AdminMyEvalsRoute
+  '/admin/rush-evals': typeof AdminRushEvalsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,8 +153,30 @@ export interface FileRouteTypes {
     | '/brothers'
     | '/consulting'
     | '/rush'
+    | '/rush-checkin'
+    | '/admin/applications'
+    | '/admin/deliberate'
+    | '/admin/evals'
+    | '/admin/interviews'
+    | '/admin/invitational-evals'
+    | '/admin/my-evals'
+    | '/admin/rush-evals'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alumni' | '/application' | '/brothers' | '/consulting' | '/rush'
+  to:
+    | '/'
+    | '/alumni'
+    | '/application'
+    | '/brothers'
+    | '/consulting'
+    | '/rush'
+    | '/rush-checkin'
+    | '/admin/applications'
+    | '/admin/deliberate'
+    | '/admin/evals'
+    | '/admin/interviews'
+    | '/admin/invitational-evals'
+    | '/admin/my-evals'
+    | '/admin/rush-evals'
   id:
     | '__root__'
     | '/'
@@ -91,6 +185,14 @@ export interface FileRouteTypes {
     | '/brothers'
     | '/consulting'
     | '/rush'
+    | '/rush-checkin'
+    | '/admin/applications'
+    | '/admin/deliberate'
+    | '/admin/evals'
+    | '/admin/interviews'
+    | '/admin/invitational-evals'
+    | '/admin/my-evals'
+    | '/admin/rush-evals'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -100,10 +202,25 @@ export interface RootRouteChildren {
   BrothersRoute: typeof BrothersRoute
   ConsultingRoute: typeof ConsultingRoute
   RushRoute: typeof RushRoute
+  RushCheckinRoute: typeof RushCheckinRoute
+  AdminApplicationsRoute: typeof AdminApplicationsRoute
+  AdminDeliberateRoute: typeof AdminDeliberateRoute
+  AdminEvalsRoute: typeof AdminEvalsRoute
+  AdminInterviewsRoute: typeof AdminInterviewsRoute
+  AdminInvitationalEvalsRoute: typeof AdminInvitationalEvalsRoute
+  AdminMyEvalsRoute: typeof AdminMyEvalsRoute
+  AdminRushEvalsRoute: typeof AdminRushEvalsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/rush-checkin': {
+      id: '/rush-checkin'
+      path: '/rush-checkin'
+      fullPath: '/rush-checkin'
+      preLoaderRoute: typeof RushCheckinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rush': {
       id: '/rush'
       path: '/rush'
@@ -146,6 +263,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/rush-evals': {
+      id: '/admin/rush-evals'
+      path: '/admin/rush-evals'
+      fullPath: '/admin/rush-evals'
+      preLoaderRoute: typeof AdminRushEvalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/my-evals': {
+      id: '/admin/my-evals'
+      path: '/admin/my-evals'
+      fullPath: '/admin/my-evals'
+      preLoaderRoute: typeof AdminMyEvalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/invitational-evals': {
+      id: '/admin/invitational-evals'
+      path: '/admin/invitational-evals'
+      fullPath: '/admin/invitational-evals'
+      preLoaderRoute: typeof AdminInvitationalEvalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/interviews': {
+      id: '/admin/interviews'
+      path: '/admin/interviews'
+      fullPath: '/admin/interviews'
+      preLoaderRoute: typeof AdminInterviewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/evals': {
+      id: '/admin/evals'
+      path: '/admin/evals'
+      fullPath: '/admin/evals'
+      preLoaderRoute: typeof AdminEvalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/deliberate': {
+      id: '/admin/deliberate'
+      path: '/admin/deliberate'
+      fullPath: '/admin/deliberate'
+      preLoaderRoute: typeof AdminDeliberateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/applications': {
+      id: '/admin/applications'
+      path: '/admin/applications'
+      fullPath: '/admin/applications'
+      preLoaderRoute: typeof AdminApplicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -156,6 +322,14 @@ const rootRouteChildren: RootRouteChildren = {
   BrothersRoute: BrothersRoute,
   ConsultingRoute: ConsultingRoute,
   RushRoute: RushRoute,
+  RushCheckinRoute: RushCheckinRoute,
+  AdminApplicationsRoute: AdminApplicationsRoute,
+  AdminDeliberateRoute: AdminDeliberateRoute,
+  AdminEvalsRoute: AdminEvalsRoute,
+  AdminInterviewsRoute: AdminInterviewsRoute,
+  AdminInvitationalEvalsRoute: AdminInvitationalEvalsRoute,
+  AdminMyEvalsRoute: AdminMyEvalsRoute,
+  AdminRushEvalsRoute: AdminRushEvalsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

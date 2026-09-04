@@ -8,13 +8,14 @@ import { Toaster } from '../components/ui/sonner'
 function RootComponent() {
   const location = useLocation()
   const isRushPage = location.pathname === '/rush'
+  const isAdminPage = location.pathname.startsWith('/admin')
 
   return (
     <>
       <main className="min-h-screen">
         <Outlet />
       </main>
-      {!isRushPage && <Footer />}
+      {!isRushPage && !isAdminPage && <Footer />}
       <Toaster position="bottom-right" />
     </>
   )

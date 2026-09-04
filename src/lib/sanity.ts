@@ -517,3 +517,50 @@ export function getVideoMimeType(url: string): string {
       return 'video/mp4' // Default fallback
   }
 }
+
+// Evaluation criteria query functions
+export type EvalFormType = 'rushEval' | 'invitationalEval' | 'interview'
+
+export interface EvalCriterion {
+  _id: string
+  cycle: string
+  formType: EvalFormType
+  label: string
+  description?: string
+  fieldType: 'score' | 'text' | 'textarea' | 'select' | 'boolean'
+  scoreMin?: number
+  scoreMax?: number
+  weight?: number
+  options?: string[]
+  required?: boolean
+  order?: number
+}
+
+export async function getEvalCriteria(
+  cycle: string,
+  formType: EvalFormType
+): Promise<EvalCriterion[]> {
+  try {
+    const result = await client.fetch(
+      '*[_type == "evalCriterion" && isActive == true && cycle == $cycle && formType == $formType] | order(order asc, label asc)',
+      { cycle, formType }
+    )
+    return result
+  } catch (error) {
+    console.error(`Error fetching ${formType} criteria for cycle ${cycle}:`, error)
+    throw error
+  }
+}
+
+// Chapter settings (singleton)
+export async function getActiveCycle(): Promise<string | null> {
+  try {
+    const result = await client.fetch(
+      '*[_type == "chapterSettings"][0].activeCycle'
+    )
+    return typeof result === 'string' && result ? result : null
+  } catch (error) {
+    console.error('Error fetching the active application cycle:', error)
+    throw error
+  }
+}

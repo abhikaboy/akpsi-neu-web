@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { MongoClient } from 'mongodb'
+import { MongoClient, ObjectId } from 'mongodb'
 
-// ponytail: one cached client per warm serverless instance — the standard
+// ponytail: one cached client per warm serverless instance, the standard
 // pattern for Mongo-on-serverless. Without it every invocation opens a new
 // connection and cold Mongo Atlas under load.
 let clientPromise: Promise<MongoClient> | null = null
@@ -35,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { cycle, name, email, answers } = req.body ?? {}
+  const { cycle, name, email, answers, rusheeId } = req.body ?? {}
 
   if (typeof cycle !== 'string' || !cycle.trim()) {
     return res.status(400).json({ error: 'cycle is required' })
@@ -49,6 +49,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!Array.isArray(answers) || answers.length > 100 || !answers.every(isAnswer)) {
     return res.status(400).json({ error: 'answers must be an array of {label, value}' })
   }
+  if (rusheeId !== undefined && (typeof rusheeId !== 'string' || !ObjectId.isValid(rusheeId))) {
+    return res.status(400).json({ error: 'rusheeId must be a valid id' })
+  }
 
   try {
     const client = await getClient()
@@ -58,6 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       name: name.trim(),
       email: email.trim(),
       answers,
+      ...(rusheeId ? { rusheeId: new ObjectId(rusheeId) } : {}),
       submittedAt: new Date(),
       status: 'new',
     })
