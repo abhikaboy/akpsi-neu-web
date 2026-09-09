@@ -20,7 +20,7 @@ export async function readError(res: Response): Promise<string> {
 }
 
 export async function checkAdminSession(): Promise<AdminUser | null> {
-	const res = await fetch("/api/admin-session");
+	const res = await fetch("/api/admin-auth?action=session");
 	if (!res.ok) return null;
 	const body = await res.json();
 	return body?.authenticated ? (body.user as AdminUser) : null;
@@ -31,7 +31,7 @@ export async function adminLogin(credentials: {
 	email: string;
 	password: string;
 }): Promise<AdminUser> {
-	const res = await fetch("/api/admin-login", {
+	const res = await fetch("/api/admin-auth?action=login", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(credentials),
@@ -42,7 +42,7 @@ export async function adminLogin(credentials: {
 }
 
 export async function adminLogout(): Promise<void> {
-	await fetch("/api/admin-logout", { method: "POST" });
+	await fetch("/api/admin-auth?action=logout", { method: "POST" });
 }
 
 export async function fetchApplications(

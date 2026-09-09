@@ -1,10 +1,27 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { checkPassword, createSessionCookie } from './_lib/auth'
+import { checkPassword, createSessionCookie, clearSessionCookie, getSession } from './_lib/auth'
 import { findBrotherByEmail } from './_lib/sanity'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+// Combines the former admin-login/admin-logout/admin-session endpoints into
+// one Serverless Function to stay under Vercel's Hobby-plan function-count cap.
+async function session(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET')
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  const currentSession = getSession(req)
+  return res.status(200).json({
+    authenticated: currentSession !== null,
+    user: currentSession
+      ? { name: currentSession.name, email: currentSession.email, pictureUrl: currentSession.pictureUrl }
+      : null,
+  })
+}
+
+async function login(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST')
     return res.status(405).json({ error: 'Method not allowed' })
@@ -52,4 +69,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const user = { name: brother.name, email: brother.email.toLowerCase(), pictureUrl: brother.pictureUrl }
   res.setHeader('Set-Cookie', createSessionCookie(user))
   return res.status(200).json({ ok: true, user })
+}
+
+async function logout(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST')
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  res.setHeader('Set-Cookie', clearSessionCookie())
+  return res.status(200).json({ ok: true })
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const action = typeof req.query.action === 'string' ? req.query.action : undefined
+
+  switch (action) {
+    case 'login':
+      return login(req, res)
+    case 'logout':
+      return logout(req, res)
+    case 'session':
+      return session(req, res)
+    default:
+      return res.status(400).json({ error: 'Unknown or missing action' })
+  }
 }
