@@ -10,7 +10,7 @@ function getClient(): Promise<MongoClient> {
   return clientPromise
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const EMAIL_RE = /^[^\s@]+@northeastern\.edu$/i
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -42,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'A valid preferred name is required' })
     }
     if (typeof email !== 'string' || !EMAIL_RE.test(email) || email.length > 200) {
-      return res.status(400).json({ error: 'A valid email is required' })
+      return res.status(400).json({ error: 'A valid @northeastern.edu email is required' })
     }
   } else if (typeof rusheeId !== 'string' || !ObjectId.isValid(rusheeId)) {
     return res.status(400).json({ error: 'A valid rusheeId is required' })

@@ -13,6 +13,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useActiveCycle } from "../../lib/activeCycle";
 import type { AdminUser } from "../../lib/adminApplications";
+import { Headshot } from "./Headshot";
 
 interface AdminNavItem {
 	name: string;
@@ -30,7 +31,12 @@ const NAV_ITEMS: AdminNavItem[] = [
 	},
 	{ name: "Interviews", path: "/admin/interviews", icon: MessageSquare },
 	{ name: "My Evals", path: "/admin/my-evals", icon: UserPen },
-	{ name: "Evals Sheet", path: "/admin/evals", icon: Table },
+	{ name: "Rush Sheet", path: "/admin/evals", icon: Table },
+	{
+		name: "Invitational Sheet",
+		path: "/admin/invitational-sheet",
+		icon: Table,
+	},
 	{ name: "Deliberate", path: "/admin/deliberate", icon: Scale },
 ];
 
@@ -82,11 +88,14 @@ export default function AdminLayout({
 
 				<div className="p-2 border-t">
 					{user && (
-						<div className="px-3 pb-2">
-							<p className="text-xs font-medium truncate">{user.name}</p>
-							<p className="text-xs text-muted-foreground truncate">
-								{user.email}
-							</p>
+						<div className="flex items-center gap-2 px-3 pb-2">
+							<Headshot src={user.pictureUrl} name={user.name} size={32} />
+							<div className="min-w-0">
+								<p className="text-xs font-medium truncate">{user.name}</p>
+								<p className="text-xs text-muted-foreground truncate">
+									{user.email}
+								</p>
+							</div>
 						</div>
 					)}
 					<button

@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import Navigation from '../components/Navigation'
 import RushEventCard from '../components/RushEventCard'
@@ -171,9 +171,9 @@ function Rush() {
             }}
           />
           
-          {/* FALL 2025 Text */}
+          {/* FALL 2026 Text */}
           <div className="absolute top-20 sm:top-24 right-8 font-['Avenir:Roman'] text-[#e5c26c] text-[16px] leading-[2]">
-            <p>FALL 2025</p>
+            <p>FALL 2026</p>
           </div>
           
           {/* RUSH Text */}
@@ -204,10 +204,17 @@ function Rush() {
 
             {/* Recruitment Timeline Section */}
             <div className="mt-[90px]">
-              <div className="mb-8">
+              <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
                 <h2 className="font-['PP_Editorial_New'] text-[24px] text-black tracking-[-0.48px] leading-none">
                   Recruitment Timeline
                 </h2>
+                {/* Rushees check in from their own phone once they're at an event. */}
+                <Link
+                  to="/rush-checkin"
+                  className="font-['Avenir:Roman'] text-[14px] rounded-full bg-[#0d2f56] text-white px-4 py-2 leading-none hover:bg-[#123c6d] transition-colors"
+                >
+                  At an event? Check in
+                </Link>
               </div>
               
               {/* Rush Events */}

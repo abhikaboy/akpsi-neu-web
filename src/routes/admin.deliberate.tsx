@@ -1,20 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
-import {
-	ArrowDown,
-	ArrowUp,
-	Check,
-	ChevronDown,
-	ChevronRight,
-} from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AdminGate from "../components/admin/AdminGate";
-import CandidateChat from "../components/admin/CandidateChat";
-import PresenceIndicator from "../components/admin/PresenceIndicator";
-import {
-	findImageAnswer,
-	Headshot,
-	isImageUrl,
-} from "../components/admin/Headshot";
+import CandidateDetail, {
+	CandidateScoreStrip,
+	candidatePhoto,
+	FORM_ORDER,
+	FORM_LABELS,
+} from "../components/admin/CandidateDetail";
+import { Headshot } from "../components/admin/Headshot";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import {
@@ -41,19 +35,6 @@ export const Route = createFileRoute("/admin/deliberate")({
 });
 
 const ALL = "__all__";
-
-const FORM_ORDER: EvalFormType[] = [
-	"rushEval",
-	"invitationalEval",
-	"interview",
-];
-const FORM_LABELS: Record<EvalFormType, string> = {
-	rushEval: "Rush Eval",
-	invitationalEval: "Invitational Eval",
-	interview: "Interview",
-};
-
-const FILE_RE = /^https?:\/\/.*\.(pdf|jpe?g|png|webp|gif)$/i;
 
 type SortKey =
 	| "overallScore"
@@ -113,12 +94,6 @@ const COVERAGE_OPTIONS: { value: CoverageFilter; label: string }[] = [
 ];
 
 const MIN_SCORE_OPTIONS = [0, 50, 60, 70, 80, 90];
-
-function formatDate(value: string | null): string {
-	if (!value) return "—";
-	const date = new Date(value);
-	return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
-}
 
 /** Sortable value for a profile, with nulls pushed to the bottom either way. */
 function sortValue(
@@ -492,207 +467,70 @@ function ProfileRow({
 	onToggle: () => void;
 }) {
 	const Chevron = open ? ChevronDown : ChevronRight;
-	// The API resolves this from the application; fall back to scanning answers
-	// in case an older record predates that field.
-	const photo =
-		profile.photoUrl ?? findImageAnswer(profile.application?.answers);
+	const photo = candidatePhoto(profile);
 
 	return (
 		<Card>
 			<CardHeader>
-				<button
-					type="button"
-					onClick={onToggle}
-					aria-expanded={open}
-					className="flex w-full items-start gap-3 text-left cursor-pointer"
-				>
-					<Chevron className="size-5 shrink-0 mt-2.5 text-muted-foreground" />
-					<Headshot src={photo} name={profile.name} size={44} />
-					<div className="min-w-0 flex-1">
-						<div className="flex flex-wrap items-center gap-2">
-							<CardTitle className="truncate">{profile.name}</CardTitle>
-							{profile.application ? (
-								<Badge variant="outline">{profile.application.status}</Badge>
-							) : (
-								<Badge variant="outline">No application</Badge>
-							)}
+				<div className="flex w-full items-start gap-3">
+					<button
+						type="button"
+						onClick={onToggle}
+						aria-expanded={open}
+						className="mt-2.5 cursor-pointer"
+					>
+						<Chevron className="size-5 shrink-0 text-muted-foreground" />
+					</button>
+
+					<Link
+						to="/admin/candidate/$email"
+						params={{ email: encodeURIComponent(profile.email) }}
+						className="group flex min-w-0 flex-1 items-start gap-3 text-left"
+					>
+						<Headshot src={photo} name={profile.name} size={44} />
+						<div className="min-w-0 flex-1">
+							<div className="flex flex-wrap items-center gap-2">
+								<CardTitle className="truncate group-hover:underline">
+									{profile.name}
+								</CardTitle>
+								{profile.application ? (
+									<Badge variant="outline">{profile.application.status}</Badge>
+								) : (
+									<Badge variant="outline">No application</Badge>
+								)}
+							</div>
+							<p className="text-sm text-muted-foreground truncate">
+								{profile.email}
+							</p>
 						</div>
-						<p className="text-sm text-muted-foreground truncate">
-							{profile.email}
-						</p>
-					</div>
-					<div className="text-right shrink-0">
-						<p className="text-2xl font-bold leading-none">
-							{profile.overallScore === null ? "—" : `${profile.overallScore}%`}
-						</p>
-						<p className="text-xs text-muted-foreground mt-1">
+					</Link>
+
+					<button
+						type="button"
+						onClick={onToggle}
+						aria-expanded={open}
+						className="text-right shrink-0 cursor-pointer"
+					>
+						<p className="text-xs text-muted-foreground">
 							{profile.totalEvaluations} eval
 							{profile.totalEvaluations === 1 ? "" : "s"}
 						</p>
-					</div>
-				</button>
+					</button>
+				</div>
 
-				<div className="flex flex-wrap gap-4 pt-2 pl-[4.75rem]">
-					{FORM_ORDER.map((formType) => {
-						const summary = profile.summary?.[formType];
-						const count = summary?.count ?? 0;
-						// Flag the forms you personally filed, so it's obvious at a
-						// glance whether your own read is already in the average.
-						const isMine = (profile.myFormTypes ?? []).includes(formType);
-						return (
-							<div key={formType} className="text-xs">
-								<span className="text-muted-foreground">
-									{FORM_LABELS[formType]}
-									{isMine && (
-										<Check
-											className="inline size-3 ml-0.5 -mt-0.5 text-primary"
-											aria-label="You evaluated this form"
-										/>
-									)}
-									:{" "}
-								</span>
-								<span
-									className={
-										count === 0 ? "text-muted-foreground" : "font-medium"
-									}
-								>
-									{summary?.averageScore == null
-										? "—"
-										: `${summary.averageScore}%`}
-								</span>
-								<span className="text-muted-foreground"> ({count})</span>
-							</div>
-						);
-					})}
+				<div className="pt-2 pl-[4.75rem]">
+					<CandidateScoreStrip profile={profile} />
 				</div>
 			</CardHeader>
 
 			{open && (
 				<CardContent className="space-y-6">
 					<Separator />
-
-					{cycle && (
-						<PresenceIndicator
-							cycle={cycle}
-							candidateEmail={profile.email}
-							viewerEmail={viewerEmail}
-						/>
-					)}
-
-					<section>
-						<h3 className="text-sm font-semibold mb-3">Application</h3>
-						{profile.application ? (
-							<>
-								<p className="text-xs text-muted-foreground mb-3">
-									Submitted {formatDate(profile.application.submittedAt)}
-								</p>
-								<div className="grid gap-3 sm:grid-cols-2">
-									{profile.application.answers.map((answer) => (
-										<div key={answer.label}>
-											<p className="text-xs font-semibold text-muted-foreground">
-												{answer.label}
-											</p>
-											{isImageUrl(answer.value) ? (
-												<a
-													href={answer.value}
-													target="_blank"
-													rel="noreferrer"
-													className="inline-block mt-1"
-												>
-													<Headshot
-														src={answer.value}
-														name={profile.name}
-														size={64}
-													/>
-												</a>
-											) : FILE_RE.test(answer.value) ? (
-												<a
-													href={answer.value}
-													target="_blank"
-													rel="noreferrer"
-													className="text-sm text-primary underline break-all"
-												>
-													View file
-												</a>
-											) : (
-												<p className="text-sm break-words whitespace-pre-wrap">
-													{answer.value || "—"}
-												</p>
-											)}
-										</div>
-									))}
-								</div>
-							</>
-						) : (
-							<p className="text-sm text-muted-foreground">
-								This rushee was evaluated but never submitted an application.
-							</p>
-						)}
-					</section>
-
-					{FORM_ORDER.map((formType) => {
-						const forForm = profile.evaluations.filter(
-							(e) => e.formType === formType,
-						);
-						if (forForm.length === 0) return null;
-						return (
-							<section key={formType}>
-								<Separator className="mb-6" />
-								<h3 className="text-sm font-semibold mb-3">
-									{FORM_LABELS[formType]}{" "}
-									<span className="text-muted-foreground font-normal">
-										({forForm.length} submitted)
-									</span>
-								</h3>
-								<div className="space-y-4">
-									{forForm.map((evaluation) => (
-										<div key={evaluation._id} className="border rounded-md p-3">
-											<div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-												<p className="text-sm font-medium">
-													{evaluation.evaluatorName}
-												</p>
-												<div className="flex items-center gap-2">
-													{evaluation.normalizedScore !== null && (
-														<Badge>{evaluation.normalizedScore}%</Badge>
-													)}
-													<span className="text-xs text-muted-foreground">
-														{formatDate(evaluation.submittedAt)}
-													</span>
-												</div>
-											</div>
-											<div className="grid gap-2 sm:grid-cols-2">
-												{evaluation.responses.map((response) => (
-													<div key={response.label}>
-														<p className="text-xs font-semibold text-muted-foreground">
-															{response.label}
-														</p>
-														<p className="text-sm break-words whitespace-pre-wrap">
-															{response.fieldType === "score" &&
-															response.score !== null
-																? `${response.score} / ${response.scoreMax ?? "?"}`
-																: response.value || "—"}
-														</p>
-													</div>
-												))}
-											</div>
-										</div>
-									))}
-								</div>
-							</section>
-						);
-					})}
-
-						{cycle && (
-							<section>
-								<Separator className="mb-6" />
-								<h3 className="text-sm font-semibold mb-3">Discussion</h3>
-								<CandidateChat
-									cycle={cycle}
-									candidateEmail={profile.email}
-									viewerEmail={viewerEmail}
-								/>
-							</section>
-						)}
+					<CandidateDetail
+						profile={profile}
+						cycle={cycle}
+						viewerEmail={viewerEmail}
+					/>
 				</CardContent>
 			)}
 		</Card>

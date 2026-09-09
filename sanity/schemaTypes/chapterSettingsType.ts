@@ -17,14 +17,21 @@ export default defineType({
         'The cycle currently in progress. Applications, evaluations, and deliberations all use this.',
       options: { list: applicationCycleOptions() },
       validation: Rule => Rule.required().error('An active cycle is required')
+    }),
+    defineField({
+      name: 'presidentName',
+      title: 'President Name',
+      type: 'string',
+      description: 'Displayed on the site wherever the current chapter president is named (e.g. the Presidential Welcome section).',
+      initialValue: 'Daniel Smith'
     })
   ],
   preview: {
-    select: { activeCycle: 'activeCycle' },
-    prepare({ activeCycle }) {
+    select: { activeCycle: 'activeCycle', presidentName: 'presidentName' },
+    prepare({ activeCycle, presidentName }) {
       return {
         title: 'Chapter Settings',
-        subtitle: activeCycle ? `Active cycle: ${activeCycle}` : 'No active cycle set'
+        subtitle: `Active cycle: ${activeCycle || 'none'} • President: ${presidentName || 'none'}`
       }
     }
   }

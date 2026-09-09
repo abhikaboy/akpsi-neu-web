@@ -124,3 +124,82 @@ export async function submitEvaluation(evaluation: {
 	if (res.status === 401) throw new Error("unauthenticated");
 	if (!res.ok) throw new Error(await readError(res));
 }
+
+export const INTERVIEW_STAGES = [
+	"to-interview",
+	"in-progress",
+	"complete",
+] as const;
+export type InterviewStage = (typeof INTERVIEW_STAGES)[number];
+
+export const INTERVIEW_STAGE_LABELS: Record<InterviewStage, string> = {
+	"to-interview": "To Interview",
+	"in-progress": "In Progress",
+	complete: "Complete",
+};
+
+export const INTERVIEW_ROLES = [
+	"facilitator",
+	"video-bro",
+	"note-taker-bro",
+	"chillin-bro",
+] as const;
+export type InterviewRole = (typeof INTERVIEW_ROLES)[number];
+
+export const INTERVIEW_ROLE_LABELS: Record<InterviewRole, string> = {
+	facilitator: "Facilitator",
+	"video-bro": "Video Bro",
+	"note-taker-bro": "Note Taker Bro",
+	"chillin-bro": "Chillin Bro",
+};
+
+export const MAX_INTERVIEW_ASSIGNMENTS = 6;
+
+export interface InterviewAssignment {
+	role: InterviewRole;
+	memberEmail: string;
+	memberName: string;
+	memberPictureUrl?: string | null;
+}
+
+export interface InterviewStatusRecord {
+	_id: string;
+	cycle: string;
+	applicantEmail: string;
+	applicantName: string;
+	stage?: InterviewStage;
+	scheduledAt?: string;
+	assignments?: InterviewAssignment[];
+	updatedByName?: string;
+	updatedAt?: string;
+}
+
+export async function fetchInterviewStatuses(
+	cycle: string,
+): Promise<InterviewStatusRecord[]> {
+	const body = await getJson<{ statuses: InterviewStatusRecord[] }>(
+		`/api/interview-status?cycle=${encodeURIComponent(cycle)}`,
+	);
+	return body.statuses ?? [];
+}
+
+/**
+ * Stage and date patch independently — omit a field to leave it untouched, and
+ * pass `scheduledAt: null` to clear a date.
+ */
+export async function saveInterviewStatus(update: {
+	cycle: string;
+	applicantEmail: string;
+	applicantName: string;
+	stage?: InterviewStage;
+	scheduledAt?: string | null;
+	assignments?: InterviewAssignment[];
+}): Promise<void> {
+	const res = await fetch("/api/interview-status", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(update),
+	});
+	if (res.status === 401) throw new Error("unauthenticated");
+	if (!res.ok) throw new Error(await readError(res));
+}

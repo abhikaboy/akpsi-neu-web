@@ -5,7 +5,7 @@ import landingImage from '../assets/landing.png'
 import patternImage from '../assets/pattern-720p-16x9.png'
 import rushVideoLocal from '../assets/rushvideof25.MOV?url'
 import Navigation from './Navigation'
-import { type Asset, type Copy, getPictureUrl, getAssetByTitle, getCopyByTitle, getFileUrl, getImageUrlFromFileAsset, getVideoMimeType, listAllAssets, findAssetBySlot } from '../lib/sanity'
+import { type Asset, type Copy, getPictureUrl, getAssetByTitle, getCopyByTitle, getFileUrl, getImageUrlFromFileAsset, getVideoMimeType, listAllAssets, findAssetBySlot, getPresidentName } from '../lib/sanity'
 
 interface SnapSectionsProps {
   onSnapComplete?: () => void
@@ -38,6 +38,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
   const [videoLoadError, setVideoLoadError] = useState<boolean>(false)
   const [presidentialLetter, setPresidentialLetter] = useState<Copy | null>(null)
   const [presidentAsset, setPresidentAsset] = useState<Asset | null>(null)
+  const [presidentName, setPresidentName] = useState<string>('Daniel Smith')
 
   // Load gallery assets
   useEffect(() => {
@@ -154,7 +155,10 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
         
         console.log('President asset final:', presidentAssetFound)
         setPresidentAsset(presidentAssetFound)
-        
+
+        const name = await getPresidentName()
+        setPresidentName(name)
+
       } catch (error) {
         console.error('Error loading presidential content:', error)
       }
@@ -452,7 +456,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
                         />
                         {/* President Name Below Image */}
                         <div className="mt-4 text-right">
-                          <p className="font-['PP_Editorial_New'] text-white text-lg">Rebecca Silva</p>
+                          <p className="font-['PP_Editorial_New'] text-white text-lg">{presidentName}</p>
                           <p className="font-instrument-italic text-yellow-500 text-base mt-1">President</p>
                         </div>
                       </div>
@@ -469,7 +473,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
                         </div>
                         {/* Name below even on error */}
                         <div className="mt-4 text-right">
-                          <p className="font-['PP_Editorial_New'] text-white text-lg">Rebecca Silva</p>
+                          <p className="font-['PP_Editorial_New'] text-white text-lg">{presidentName}</p>
                           <p className="font-instrument-italic text-yellow-500 text-base mt-1">President</p>
                         </div>
                       </div>
@@ -483,7 +487,7 @@ export const SnapSections: React.FC<SnapSectionsProps> = ({ onSnapComplete, asse
                   </div>
                   {/* Placeholder name */}
                   <div className="mt-4 text-right">
-                    <p className="font-['PP_Editorial_New'] text-white text-lg">Rebecca Silva</p>
+                    <p className="font-['PP_Editorial_New'] text-white text-lg">{presidentName}</p>
                     <p className="font-instrument-italic text-yellow-500 text-base mt-1">President</p>
                   </div>
                 </div>

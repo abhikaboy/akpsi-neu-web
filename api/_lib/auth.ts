@@ -6,6 +6,7 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 12 // 12 hours
 export interface AdminSession {
   name: string
   email: string
+  pictureUrl: string | null
   expiresAt: number
 }
 
@@ -27,10 +28,19 @@ function secureCookieFlags(): string {
 // The session carries the brother's identity so evaluations can be attributed
 // without a user collection: the chapter shares one password, but each login
 // states who is signing in and the HMAC keeps that name from being edited.
-export function createSessionCookie(user: { name: string; email: string }): string {
+export function createSessionCookie(user: {
+  name: string
+  email: string
+  pictureUrl: string | null
+}): string {
   const expires = Date.now() + SESSION_TTL_MS
   const payload = Buffer.from(
-    JSON.stringify({ name: user.name, email: user.email, expiresAt: expires }),
+    JSON.stringify({
+      name: user.name,
+      email: user.email,
+      pictureUrl: user.pictureUrl,
+      expiresAt: expires,
+    }),
   ).toString('base64url')
   const token = `${payload}.${sign(payload)}`
   const maxAge = Math.floor(SESSION_TTL_MS / 1000)
@@ -78,7 +88,7 @@ export function getSession(req: { headers: { cookie?: string } }): AdminSession 
   if (typeof session?.expiresAt !== 'number' || Date.now() >= session.expiresAt) return null
   if (typeof session.name !== 'string' || typeof session.email !== 'string') return null
 
-  return session
+  return { ...session, pictureUrl: session.pictureUrl ?? null }
 }
 
 export function isAuthenticated(req: { headers: { cookie?: string } }): boolean {

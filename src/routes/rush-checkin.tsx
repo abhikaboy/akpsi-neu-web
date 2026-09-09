@@ -36,12 +36,25 @@ function formatEventTime(dateStr: string): string {
   return new Date(dateStr).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }
 
+/** Today's event when there is one — the overwhelmingly common case. */
+function defaultEventId(events: RushEvent[]): string {
+  return events.find(e => isToday(e.date))?._id ?? ''
+}
+
+function formatEventDay(dateStr: string): string {
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return dateStr
+  if (isToday(dateStr)) return 'Today'
+  return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })
+}
+
 function RushCheckin() {
   const { cycle, loading: cycleLoading, error: cycleError } = useActiveCycle()
   const [loading, setLoading] = useState(true)
   const [events, setEvents] = useState<RushEvent[]>([])
   const [rushees, setRushees] = useState<Rushee[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [rosterError, setRosterError] = useState<string | null>(null)
 
   const [isFirstEvent, setIsFirstEvent] = useState(false)
   const [email, setEmail] = useState('')
@@ -55,12 +68,29 @@ function RushCheckin() {
   )
 
   useEffect(() => {
-    Promise.all([getRushEvents(), fetchRushees()])
-      .then(([eventData, rusheeData]) => {
-        setEvents(eventData.filter(e => isToday(e.date)))
-        setRushees(rusheeData)
+    // Settled independently: the returning-rushee list comes from our API and
+    // the events come from Sanity, and losing one shouldn't hide the other.
+    Promise.allSettled([getRushEvents(), fetchRushees()])
+      .then(([eventResult, rusheeResult]) => {
+        if (eventResult.status === 'fulfilled') {
+          setEvents(eventResult.value)
+          // Default to an event happening today when there is one, so the
+          // common case is a single tap.
+          setEventId(defaultEventId(eventResult.value))
+        } else {
+          setError('Failed to load rush events. Please refresh and try again.')
+        }
+
+        if (rusheeResult.status === 'fulfilled') {
+          setRushees(rusheeResult.value)
+        } else {
+          // Without the roster you can still check in as a first-timer, so say
+          // what's actually unavailable rather than blocking the whole page.
+          setRosterError(
+            "Couldn't load the returning-rushee list. If you've been here before, ask a brother for help.",
+          )
+        }
       })
-      .catch(() => setError('Failed to load check-in options. Please refresh and try again.'))
       .finally(() => setLoading(false))
   }, [])
 
@@ -70,7 +100,7 @@ function RushCheckin() {
     setPreferredName('')
     setRusheeSearch('')
     setRusheeId('')
-    setEventId('')
+    setEventId(defaultEventId(events))
     setConfirmation(null)
   }
 
@@ -84,6 +114,10 @@ function RushCheckin() {
     if (isFirstEvent) {
       if (!preferredName.trim() || !email.trim()) {
         toast.error('Please enter your name and email.')
+        return
+      }
+      if (!/^[^\s@]+@northeastern\.edu$/i.test(email.trim())) {
+        toast.error('Please use your @northeastern.edu email.')
         return
       }
     } else if (!rusheeId) {
@@ -152,7 +186,7 @@ function RushCheckin() {
             Rush Check-In
           </h1>
           <p className="text-muted-foreground mb-8">
-            Welcome! Fill this out to check in to today's event.
+            Welcome! Pick the event you're at and check in.
           </p>
 
           {(cycleError ?? error) && (
@@ -169,7 +203,7 @@ function RushCheckin() {
             </div>
           ) : !cycle ? null : events.length === 0 ? (
             <p className="text-muted-foreground text-sm border rounded-lg p-6">
-              There are no rush events scheduled for today. Check back on an event day!
+              There are no rush events scheduled yet. Check back soon!
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -177,12 +211,13 @@ function RushCheckin() {
                 <Label className="mb-2 block">Event</Label>
                 <Select value={eventId} onValueChange={setEventId}>
                   <SelectTrigger className="w-full h-11">
-                    <SelectValue placeholder="Select today's event" />
+                    <SelectValue placeholder="Select an event" />
                   </SelectTrigger>
                   <SelectContent>
                     {events.map(event => (
                       <SelectItem key={event._id} value={event._id}>
-                        {event.name} &middot; {formatEventTime(event.date)}
+                        {formatEventDay(event.date)} &middot; {event.name} &middot;{' '}
+                        {formatEventTime(event.date)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -228,6 +263,9 @@ function RushCheckin() {
                   <Label className="mb-2 block">
                     Your Name<span className="text-destructive"> *</span>
                   </Label>
+                  {rosterError && (
+                    <p className="text-xs text-yellow-800 mb-2">{rosterError}</p>
+                  )}
                   <NameCombobox
                     people={rushees}
                     query={rusheeSearch}

@@ -526,10 +526,14 @@ export interface EvalCriterion {
   cycle: string
   formType: EvalFormType
   label: string
+  section?: string
+  subsection?: string
   description?: string
   fieldType: 'score' | 'text' | 'textarea' | 'select' | 'boolean'
   scoreMin?: number
   scoreMax?: number
+  scoreMinLabel?: string
+  scoreMaxLabel?: string
   weight?: number
   options?: string[]
   required?: boolean
@@ -562,5 +566,17 @@ export async function getActiveCycle(): Promise<string | null> {
   } catch (error) {
     console.error('Error fetching the active application cycle:', error)
     throw error
+  }
+}
+
+export async function getPresidentName(): Promise<string> {
+  try {
+    const result = await client.fetch(
+      '*[_type == "chapterSettings"][0].presidentName'
+    )
+    return typeof result === 'string' && result ? result : 'Daniel Smith'
+  } catch (error) {
+    console.error('Error fetching the president name:', error)
+    return 'Daniel Smith'
   }
 }

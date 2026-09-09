@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import AdminGate from "../components/admin/AdminGate";
 import DataTable, { type DataColumn } from "../components/admin/DataTable";
+import RusheeLink from "../components/admin/RusheeLink";
 import { Badge } from "../components/ui/badge";
 import {
 	Card,
@@ -27,20 +28,16 @@ export const Route = createFileRoute("/admin/my-evals")({
 
 const ALL = "__all__";
 
-const FORM_ORDER: EvalFormType[] = [
-	"rushEval",
-	"invitationalEval",
-	"interview",
-];
-const FORM_LABELS: Record<EvalFormType, string> = {
+type SheetFormType = Exclude<EvalFormType, "interview">;
+
+const FORM_ORDER: SheetFormType[] = ["rushEval", "invitationalEval"];
+const FORM_LABELS: Record<SheetFormType, string> = {
 	rushEval: "Rush Eval",
 	invitationalEval: "Invitational Eval",
-	interview: "Interview",
 };
-const FORM_PATHS: Record<EvalFormType, string> = {
+const FORM_PATHS: Record<SheetFormType, string> = {
 	rushEval: "/admin/rush-evals",
 	invitationalEval: "/admin/invitational-evals",
-	interview: "/admin/interviews",
 };
 
 function formatDate(value: string): string {
@@ -82,7 +79,9 @@ function MyEvals({ evaluatorName }: { evaluatorName: string }) {
 		setLoading(true);
 		setError(null);
 		fetchEvaluations({ cycle, mine: true })
-			.then(setEvaluations)
+			.then((mine) =>
+				setEvaluations(mine.filter((e) => e.formType !== "interview")),
+			)
 			.catch((err) => {
 				if (err instanceof Error && err.message === "unauthenticated") {
 					window.location.reload();
@@ -98,7 +97,7 @@ function MyEvals({ evaluatorName }: { evaluatorName: string }) {
 	}, [cycle, cycleLoading]);
 
 	const countsByForm = useMemo(() => {
-		const counts = {} as Record<EvalFormType, number>;
+		const counts = {} as Record<SheetFormType, number>;
 		for (const formType of FORM_ORDER) {
 			counts[formType] = evaluations.filter(
 				(e) => e.formType === formType,
@@ -146,7 +145,7 @@ function MyEvals({ evaluatorName }: { evaluatorName: string }) {
 			{
 				key: "formType",
 				label: "Form",
-				render: (e) => FORM_LABELS[e.formType] ?? e.formType,
+				render: (e) => FORM_LABELS[e.formType as SheetFormType] ?? e.formType,
 				sortValue: (e) => e.formType,
 				width: 150,
 			},
@@ -154,6 +153,9 @@ function MyEvals({ evaluatorName }: { evaluatorName: string }) {
 				key: "applicantName",
 				label: "Rushee",
 				render: (e) => e.applicantName,
+				renderCell: (e) => (
+					<RusheeLink name={e.applicantName} email={e.applicantEmail} />
+				),
 				sortValue: (e) => e.applicantName,
 			},
 			{
@@ -205,7 +207,7 @@ function MyEvals({ evaluatorName }: { evaluatorName: string }) {
 				</p>
 			</div>
 
-			<div className="grid gap-3 sm:grid-cols-3 mb-6">
+			<div className="grid gap-3 sm:grid-cols-2 mb-6">
 				{FORM_ORDER.map((formType) => (
 					<Card key={formType}>
 						<CardHeader className="pb-2">

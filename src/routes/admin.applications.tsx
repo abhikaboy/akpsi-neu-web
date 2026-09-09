@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import AdminGate from "../components/admin/AdminGate";
 import DataTable, { type DataColumn } from "../components/admin/DataTable";
@@ -7,6 +7,7 @@ import {
 	Headshot,
 	isImageUrl,
 } from "../components/admin/Headshot";
+import RusheeLink from "../components/admin/RusheeLink";
 import { Badge } from "../components/ui/badge";
 import {
 	Card,
@@ -157,6 +158,7 @@ function ApplicationsDashboard() {
 				key: "name",
 				label: "Name",
 				render: (app) => app.name,
+				renderCell: (app) => <RusheeLink name={app.name} email={app.email} />,
 				sortValue: (app) => app.name,
 			},
 			{
@@ -310,7 +312,15 @@ function ApplicationsGallery({
 								{headshot && <Headshot src={headshot} size={48} />}
 								<div className="flex-1 min-w-0">
 									<div className="flex items-start justify-between gap-2">
-										<CardTitle>{app.name}</CardTitle>
+										<CardTitle>
+											<Link
+												to="/admin/candidate/$email"
+												params={{ email: encodeURIComponent(app.email) }}
+												className="hover:underline underline-offset-2"
+											>
+												{app.name}
+											</Link>
+										</CardTitle>
 									</div>
 									<p className="text-sm text-muted-foreground">{app.email}</p>
 								</div>

@@ -1,13 +1,14 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "chi-sigma-web",
       "dependencies": {
-        "@sanity/vision": "4.7.0",
+        "@sanity/vision": "^4.7.0",
         "react": "^19.1",
         "react-dom": "^19.1",
-        "sanity": "4.7.0",
+        "sanity": "^4.7.0",
         "styled-components": "^6.1.18",
       },
       "devDependencies": {

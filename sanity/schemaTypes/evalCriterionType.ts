@@ -36,6 +36,19 @@ export default defineType({
       validation: Rule => Rule.required().max(200).error('Label is required and must be under 200 characters')
     }),
     defineField({
+      name: 'section',
+      title: 'Section',
+      type: 'string',
+      description:
+        'Optional heading this criterion is grouped under on the form, e.g. "Core Questions". Criteria with no section appear first.'
+    }),
+    defineField({
+      name: 'subsection',
+      title: 'Sub-section',
+      type: 'string',
+      description: 'Optional heading nested inside the section, e.g. "Professional"'
+    }),
+    defineField({
       name: 'description',
       title: 'Guidance',
       type: 'text',
@@ -78,6 +91,20 @@ export default defineType({
           const min = context.parent?.scoreMin ?? 1
           return max > min ? true : 'Maximum score must be greater than the minimum'
         })
+    }),
+    defineField({
+      name: 'scoreMinLabel',
+      title: 'Low-End Label',
+      type: 'string',
+      description: 'Anchor shown under the lowest score, e.g. "No"',
+      hidden: ({ parent }) => parent?.fieldType !== 'score'
+    }),
+    defineField({
+      name: 'scoreMaxLabel',
+      title: 'High-End Label',
+      type: 'string',
+      description: 'Anchor shown under the highest score, e.g. "Yes"',
+      hidden: ({ parent }) => parent?.fieldType !== 'score'
     }),
     defineField({
       name: 'weight',

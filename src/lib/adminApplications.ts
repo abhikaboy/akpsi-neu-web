@@ -11,6 +11,7 @@ export interface ApplicationRecord {
 export interface AdminUser {
 	name: string;
 	email: string;
+	pictureUrl?: string | null;
 }
 
 export async function readError(res: Response): Promise<string> {

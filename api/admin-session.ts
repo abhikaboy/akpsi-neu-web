@@ -10,6 +10,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const session = getSession(req)
   return res.status(200).json({
     authenticated: session !== null,
-    user: session ? { name: session.name, email: session.email } : null,
+    user: session
+      ? { name: session.name, email: session.email, pictureUrl: session.pictureUrl }
+      : null,
   })
 }
