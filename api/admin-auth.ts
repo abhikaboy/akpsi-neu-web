@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { checkPassword, createSessionCookie, clearSessionCookie, getSession } from './_lib/auth'
-import { findBrotherByEmail } from './_lib/sanity'
+import { checkPassword, createSessionCookie, clearSessionCookie, getSession } from './_lib/auth.js'
+import { findBrotherByEmail } from './_lib/sanity.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 

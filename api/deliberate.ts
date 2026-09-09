@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession } from './_lib/auth'
-import { EVAL_FORM_TYPES, type EvalFormType } from './_lib/evaluations'
-import { getDb, normalizeEmail } from './_lib/mongo'
+import { getSession } from './_lib/auth.js'
+import { EVAL_FORM_TYPES, type EvalFormType } from './_lib/evaluations.js'
+import { getDb, normalizeEmail } from './_lib/mongo.js'
 
 interface FormSummary {
   count: number

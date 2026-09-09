@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession } from './_lib/auth'
-import { normalizeEmail } from './_lib/mongo'
-import { getRedis } from './_lib/redis'
+import { getSession } from './_lib/auth.js'
+import { normalizeEmail } from './_lib/mongo.js'
+import { getRedis } from './_lib/redis.js'
 
 // Heartbeat-based presence: the client pings every few seconds while a
 // candidate's profile is open, each ping resets a short TTL key. Redis expires

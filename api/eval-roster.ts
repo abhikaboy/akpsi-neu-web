@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { isAuthenticated } from './_lib/auth'
-import { getDb, normalizeEmail } from './_lib/mongo'
+import { isAuthenticated } from './_lib/auth.js'
+import { getDb, normalizeEmail } from './_lib/mongo.js'
 
 interface RosterEntry {
   name: string

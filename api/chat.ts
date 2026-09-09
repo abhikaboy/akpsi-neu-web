@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession } from './_lib/auth'
-import { getDb, normalizeEmail } from './_lib/mongo'
+import { getSession } from './_lib/auth.js'
+import { getDb, normalizeEmail } from './_lib/mongo.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const session = getSession(req)

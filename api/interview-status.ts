@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession, isAuthenticated } from './_lib/auth'
-import { getDb, normalizeEmail } from './_lib/mongo'
+import { getSession, isAuthenticated } from './_lib/auth.js'
+import { getDb, normalizeEmail } from './_lib/mongo.js'
 
 export const INTERVIEW_STAGES = ['to-interview', 'in-progress', 'complete'] as const
 type InterviewStage = (typeof INTERVIEW_STAGES)[number]

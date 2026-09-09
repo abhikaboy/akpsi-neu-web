@@ -1,13 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession } from './_lib/auth'
+import { getSession } from './_lib/auth.js'
 import {
   isEvalFormType,
   isEvalResponse,
   normalizedScore,
   rawAverage,
   type EvalResponse,
-} from './_lib/evaluations'
-import { getDb, normalizeEmail } from './_lib/mongo'
+} from './_lib/evaluations.js'
+import { getDb, normalizeEmail } from './_lib/mongo.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
