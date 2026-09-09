@@ -16,6 +16,7 @@ import { Route as BrothersRouteImport } from './routes/brothers'
 import { Route as ApplicationRouteImport } from './routes/application'
 import { Route as AlumniRouteImport } from './routes/alumni'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminRushEvalsRouteImport } from './routes/admin.rush-evals'
 import { Route as AdminMyEvalsRouteImport } from './routes/admin.my-evals'
 import { Route as AdminInvitationalSheetRouteImport } from './routes/admin.invitational-sheet'
@@ -59,6 +60,11 @@ const AlumniRoute = AlumniRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRushEvalsRoute = AdminRushEvalsRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/admin/invitational-sheet': typeof AdminInvitationalSheetRoute
   '/admin/my-evals': typeof AdminMyEvalsRoute
   '/admin/rush-evals': typeof AdminRushEvalsRoute
+  '/admin': typeof AdminIndexRoute
   '/admin/candidate/$email': typeof AdminCandidateEmailRoute
 }
 export interface FileRoutesByTo {
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/admin/invitational-sheet': typeof AdminInvitationalSheetRoute
   '/admin/my-evals': typeof AdminMyEvalsRoute
   '/admin/rush-evals': typeof AdminRushEvalsRoute
+  '/admin': typeof AdminIndexRoute
   '/admin/candidate/$email': typeof AdminCandidateEmailRoute
 }
 export interface FileRoutesById {
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/admin/invitational-sheet': typeof AdminInvitationalSheetRoute
   '/admin/my-evals': typeof AdminMyEvalsRoute
   '/admin/rush-evals': typeof AdminRushEvalsRoute
+  '/admin/': typeof AdminIndexRoute
   '/admin/candidate/$email': typeof AdminCandidateEmailRoute
 }
 export interface FileRouteTypes {
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/admin/invitational-sheet'
     | '/admin/my-evals'
     | '/admin/rush-evals'
+    | '/admin'
     | '/admin/candidate/$email'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/admin/invitational-sheet'
     | '/admin/my-evals'
     | '/admin/rush-evals'
+    | '/admin'
     | '/admin/candidate/$email'
   id:
     | '__root__'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/admin/invitational-sheet'
     | '/admin/my-evals'
     | '/admin/rush-evals'
+    | '/admin/'
     | '/admin/candidate/$email'
   fileRoutesById: FileRoutesById
 }
@@ -235,6 +247,7 @@ export interface RootRouteChildren {
   AdminInvitationalSheetRoute: typeof AdminInvitationalSheetRoute
   AdminMyEvalsRoute: typeof AdminMyEvalsRoute
   AdminRushEvalsRoute: typeof AdminRushEvalsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   AdminCandidateEmailRoute: typeof AdminCandidateEmailRoute
 }
 
@@ -287,6 +300,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/rush-evals': {
@@ -371,6 +391,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminInvitationalSheetRoute: AdminInvitationalSheetRoute,
   AdminMyEvalsRoute: AdminMyEvalsRoute,
   AdminRushEvalsRoute: AdminRushEvalsRoute,
+  AdminIndexRoute: AdminIndexRoute,
   AdminCandidateEmailRoute: AdminCandidateEmailRoute,
 }
 export const routeTree = rootRouteImport
