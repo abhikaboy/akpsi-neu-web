@@ -32,8 +32,8 @@ export const ScrollSections: React.FC<ScrollSectionsProps> = ({ assets, globalAs
             src: (module as { default: string }).default,
             alt: altText
           }
-        }).sort((a, b) => a.alt.localeCompare(b.alt)) // Sort alphabetically by alt text
-        
+        }).sort((a, b) => a.alt.localeCompare(b.alt)).reverse() // Sort alphabetically, then reverse
+
         setLogoImages(logos)
       } catch (error) {
         console.error('Error loading logo images:', error)
