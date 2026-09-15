@@ -39,3 +39,16 @@ export async function findBrotherByEmail(email: string): Promise<BrotherRecord |
     pictureUrl: doc.picture?.asset ? builder.image(doc.picture).width(128).height(128).fit('crop').url() : null,
   }
 }
+
+/**
+ * The check-in code for a rush event, so the server can verify it instead of
+ * trusting the browser. Falls back to the schema default when unset.
+ */
+export async function getRushEventCheckinCode(eventId: string): Promise<string | null> {
+  const doc = await client.fetch<{ checkinCode?: string } | null>(
+    `*[_type == "rushEvent" && _id == $eventId][0]{checkinCode}`,
+    { eventId },
+  )
+  if (!doc) return null
+  return (doc.checkinCode ?? '1234').trim()
+}

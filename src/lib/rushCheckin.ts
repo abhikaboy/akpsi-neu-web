@@ -8,6 +8,7 @@ export interface RushCheckinPayload {
   eventName: string
   eventDate: string
   cycle: string
+  code: string
   isFirstEvent: boolean
   email?: string
   preferredName?: string

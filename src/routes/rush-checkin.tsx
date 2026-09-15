@@ -165,6 +165,7 @@ function RushCheckin() {
         eventName: event.name,
         eventDate: event.date,
         cycle,
+        code: code.trim(),
         isFirstEvent,
         email: isFirstEvent ? email.trim() : undefined,
         preferredName: isFirstEvent ? preferredName.trim() : undefined,

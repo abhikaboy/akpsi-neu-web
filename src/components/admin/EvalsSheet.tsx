@@ -5,6 +5,7 @@ import { useActiveCycle } from "../../lib/activeCycle";
 import { fetchEvaluations, type EvaluationRecord } from "../../lib/adminEvals";
 import type { EvalFormType } from "../../lib/sanity";
 import DataTable, { type DataColumn } from "./DataTable";
+import ExportCsvButton from "./ExportCsvButton";
 import RusheeLink from "./RusheeLink";
 
 function formatDate(value: string): string {
@@ -170,6 +171,14 @@ export default function EvalsSheet({
 					onChange={(e) => setSearch(e.target.value)}
 					className="max-w-sm"
 				/>
+
+				<div className="ml-auto">
+					<ExportCsvButton
+						filename={`${formType}-${cycle ?? "no-cycle"}.csv`}
+						rows={filtered}
+						columns={columns}
+					/>
+				</div>
 			</div>
 
 			{(cycleError ?? error) && (

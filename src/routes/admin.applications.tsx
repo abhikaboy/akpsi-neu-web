@@ -7,6 +7,7 @@ import {
 	Headshot,
 	isImageUrl,
 } from "../components/admin/Headshot";
+import ExportCsvButton from "../components/admin/ExportCsvButton";
 import RusheeLink from "../components/admin/RusheeLink";
 import { Badge } from "../components/ui/badge";
 import {
@@ -245,7 +246,15 @@ function ApplicationsDashboard() {
 					</SelectContent>
 				</Select>
 
-				<div className="flex rounded-md border overflow-hidden ml-auto">
+				<div className="ml-auto">
+					<ExportCsvButton
+						filename={`applications-${cycle ?? "no-cycle"}.csv`}
+						rows={filtered}
+						columns={columns}
+					/>
+				</div>
+
+				<div className="flex rounded-md border overflow-hidden">
 					<button
 						type="button"
 						onClick={() => setView("table")}

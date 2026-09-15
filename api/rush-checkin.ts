@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { MongoClient, ObjectId } from 'mongodb'
+import { getRushEventCheckinCode } from './_lib/sanity.js'
 
 let clientPromise: Promise<MongoClient> | null = null
 
@@ -18,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { eventId, eventName, eventDate, cycle, isFirstEvent, email, preferredName, rusheeId } =
+  const { eventId, eventName, eventDate, cycle, isFirstEvent, email, preferredName, rusheeId, code } =
     req.body ?? {}
 
   if (typeof eventId !== 'string' || !eventId.trim()) {
@@ -44,6 +45,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   if (typeof isFirstEvent !== 'boolean') {
     return res.status(400).json({ error: 'isFirstEvent must be a boolean' })
+  }
+
+  if (typeof code !== 'string' || !code.trim()) {
+    return res.status(400).json({ error: 'A check-in code is required' })
+  }
+  // Verified against Sanity here, not just in the browser, so a check-in can't
+  // be forged by editing the client or posting straight at this endpoint.
+  const expectedCode = await getRushEventCheckinCode(eventId)
+  if (!expectedCode) {
+    return res.status(404).json({ error: 'Event not found' })
+  }
+  if (code.trim().toLowerCase() !== expectedCode.toLowerCase()) {
+    return res.status(403).json({ error: 'That check-in code is incorrect' })
   }
 
   if (isFirstEvent) {
