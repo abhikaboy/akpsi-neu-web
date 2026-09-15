@@ -47,6 +47,7 @@ export interface RushEvent {
   date: string
   room: string
   dresscode: 'casual' | 'business_casual' | 'business_professional' | 'formal' | 'semi_formal' | 'theme' | 'athletic'
+  checkinCode?: string
   description?: string
   isActive: boolean
 }

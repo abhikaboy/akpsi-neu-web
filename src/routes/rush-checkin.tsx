@@ -74,6 +74,7 @@ function RushCheckin() {
   const [rusheeSearch, setRusheeSearch] = useState('')
   const [rusheeId, setRusheeId] = useState('')
   const [eventId, setEventId] = useState('')
+  const [code, setCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [confirmation, setConfirmation] = useState<{ name: string; eventName: string } | null>(
     null,
@@ -115,6 +116,7 @@ function RushCheckin() {
     setRusheeSearch('')
     setRusheeId('')
     setEventId(defaultEventId(events))
+    setCode('')
     setConfirmation(null)
   }
 
@@ -127,6 +129,14 @@ function RushCheckin() {
     }
     if (isPastEvent(event.date)) {
       toast.error('That event has already passed.')
+      return
+    }
+    // Rudimentary gate: the code is read out at the event, so only people in
+    // the room can check in. It's in the Sanity payload, so it deters rather
+    // than secures.
+    const expectedCode = (event.checkinCode ?? '1234').trim()
+    if (code.trim().toLowerCase() !== expectedCode.toLowerCase()) {
+      toast.error('That check-in code is incorrect. Ask a brother for the code.')
       return
     }
     if (isFirstEvent) {
@@ -300,6 +310,20 @@ function RushCheckin() {
                   />
                 </div>
               )}
+
+              <div>
+                <Label htmlFor="checkin-code" className="mb-2 block">
+                  Check-In Code<span className="text-destructive"> *</span>
+                </Label>
+                <Input
+                  id="checkin-code"
+                  className="h-11"
+                  value={code}
+                  onChange={e => setCode(e.target.value)}
+                  autoComplete="off"
+                  placeholder="Ask a brother for today's code"
+                />
+              </div>
 
               <Button type="submit" disabled={submitting} className="w-full h-11">
                 {submitting ? 'Checking in...' : 'Check In'}

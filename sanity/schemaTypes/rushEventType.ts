@@ -41,6 +41,16 @@ export default defineType({
       validation: Rule => Rule.required().error('Dress code is required')
     }),
     defineField({
+      name: 'checkinCode',
+      title: 'Check-In Code',
+      type: 'string',
+      description:
+        'Rushees must type this code to check in. Share it out loud at the event.',
+      initialValue: '1234',
+      validation: Rule =>
+        Rule.required().max(20).error('A check-in code is required and must be under 20 characters')
+    }),
+    defineField({
       name: 'description',
       title: 'Event Description',
       type: 'text',
