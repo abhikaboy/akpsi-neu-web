@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
+import { useApplicationEnabled } from '../lib/applicationEnabled'
 
 interface NavigationProps {
   currentPage?: string
@@ -9,6 +10,7 @@ interface NavigationProps {
 export default function Navigation({ currentPage, mode = 'dark' }: NavigationProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
+  const { enabled: applicationEnabled } = useApplicationEnabled()
   
   const openMenu = () => {
     setIsMobileMenuOpen(true)
@@ -31,7 +33,8 @@ export default function Navigation({ currentPage, mode = 'dark' }: NavigationPro
     { name: 'Members', path: '/brothers' },
     { name: 'Rush', path: '/rush' },
     { name: 'Chi Sigma Consulting', path: '/consulting' },
-    { name: 'Apply', path: '/application' }
+    // The Apply link only appears while the application is enabled in Sanity.
+    ...(applicationEnabled ? [{ name: 'Apply', path: '/application' }] : [])
   ]
 
   return (

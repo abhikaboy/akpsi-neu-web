@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Textarea } from '../components/ui/textarea'
+import { Checkbox } from '../components/ui/checkbox'
 import {
   Select,
   SelectContent,
@@ -16,9 +17,16 @@ import {
 } from '../components/ui/select'
 import { getApplicationQuestions, type ApplicationQuestion } from '../lib/sanity'
 import { useActiveCycle } from '../lib/activeCycle'
+import { useApplicationEnabled } from '../lib/applicationEnabled'
 import { submitApplication } from '../lib/applications'
 import { uploadApplicationFile } from '../lib/uploads'
 import { fetchRushees, type Rushee } from '../lib/rushCheckin'
+
+// Long answers are capped so readers get comparable, skimmable responses.
+const LONG_ANSWER_WORD_LIMIT = 150
+
+const countWords = (value: string) =>
+  value.trim() ? value.trim().split(/\s+/).length : 0
 
 export const Route = createFileRoute('/application')({
   component: Application,
@@ -31,6 +39,8 @@ function Application() {
     loading: cycleLoading,
     error: cycleError,
   } = useActiveCycle()
+  const { enabled: applicationEnabled, loading: enabledLoading } =
+    useApplicationEnabled()
   const [questions, setQuestions] = useState<ApplicationQuestion[]>([])
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [rushees, setRushees] = useState<Rushee[]>([])
@@ -67,6 +77,19 @@ function Application() {
 
   const setAnswer = (id: string, value: string) => setAnswers(prev => ({ ...prev, [id]: value }))
 
+  // Checkbox answers ride along in the same string map as every other answer,
+  // stored as a comma-separated list so submissions stay one label/value pair.
+  const selectedOptions = (id: string) =>
+    (answers[id] ?? '').split(', ').filter(Boolean)
+
+  const toggleOption = (id: string, option: string, checked: boolean) => {
+    const current = selectedOptions(id)
+    const next = checked
+      ? [...current, option]
+      : current.filter(value => value !== option)
+    setAnswer(id, next.join(', '))
+  }
+
   const handleFileChange = async (q: ApplicationQuestion, file: File | undefined) => {
     if (!file) return
     setUploadingIds(prev => new Set(prev).add(q._id))
@@ -98,6 +121,17 @@ function Application() {
     const missing = questions.find(q => q.required && !answers[q._id]?.trim())
     if (missing) {
       toast.error(`Please answer: ${missing.label}`)
+      return
+    }
+    const tooLong = questions.find(
+      q =>
+        q.fieldType === 'textarea' &&
+        countWords(answers[q._id] ?? '') > LONG_ANSWER_WORD_LIMIT
+    )
+    if (tooLong) {
+      toast.error(
+        `Please shorten your answer to ${LONG_ANSWER_WORD_LIMIT} words or less: ${tooLong.label}`
+      )
       return
     }
     setSubmitting(true)
@@ -144,13 +178,13 @@ function Application() {
             </div>
           )}
 
-          {loading ? (
+          {loading || enabledLoading ? (
             <div className="space-y-6">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="skeleton h-16 rounded" />
               ))}
             </div>
-          ) : !cycle || questions.length === 0 ? (
+          ) : !applicationEnabled || !cycle || questions.length === 0 ? (
             <p className="text-muted-foreground text-sm border rounded-lg p-6">
               Applications aren't open yet. Check back soon.
             </p>
@@ -185,17 +219,31 @@ function Application() {
               </div>
               {questions.map(q => (
                 <div key={q._id}>
-                  <Label htmlFor={q._id} className="mb-2 block">
+                  <Label
+                    htmlFor={q.fieldType === 'checkbox' ? undefined : q._id}
+                    className="mb-2 block"
+                  >
                     {q.label}
                     {q.required && <span className="text-destructive"> *</span>}
                   </Label>
                   {q.fieldType === 'textarea' && (
-                    <Textarea
-                      id={q._id}
-                      value={answers[q._id] ?? ''}
-                      onChange={e => setAnswer(q._id, e.target.value)}
-                      rows={5}
-                    />
+                    <>
+                      <Textarea
+                        id={q._id}
+                        value={answers[q._id] ?? ''}
+                        onChange={e => setAnswer(q._id, e.target.value)}
+                        rows={5}
+                      />
+                      <p
+                        className={`text-xs mt-1 ${
+                          countWords(answers[q._id] ?? '') > LONG_ANSWER_WORD_LIMIT
+                            ? 'text-destructive'
+                            : 'text-muted-foreground'
+                        }`}
+                      >
+                        {countWords(answers[q._id] ?? '')} / {LONG_ANSWER_WORD_LIMIT} words
+                      </p>
+                    </>
                   )}
                   {q.fieldType === 'text' && (
                     <Input
@@ -217,6 +265,27 @@ function Application() {
                         ))}
                       </SelectContent>
                     </Select>
+                  )}
+                  {q.fieldType === 'checkbox' && (
+                    <div className="space-y-3">
+                      {(q.options ?? []).map(option => {
+                        const optionId = `${q._id}-${option}`
+                        return (
+                          <div key={option} className="flex items-center gap-3">
+                            <Checkbox
+                              id={optionId}
+                              checked={selectedOptions(q._id).includes(option)}
+                              onCheckedChange={checked =>
+                                toggleOption(q._id, option, checked === true)
+                              }
+                            />
+                            <Label htmlFor={optionId} className="font-normal">
+                              {option}
+                            </Label>
+                          </div>
+                        )
+                      })}
+                    </div>
                   )}
                   {q.fieldType === 'file' && (
                     <>

@@ -28,6 +28,7 @@ export default defineType({
           { title: 'Short Answer', value: 'text' },
           { title: 'Long Answer', value: 'textarea' },
           { title: 'Dropdown', value: 'select' },
+          { title: 'Checkboxes (choose any)', value: 'checkbox' },
           { title: 'File Upload', value: 'file' }
         ]
       },
@@ -36,14 +37,17 @@ export default defineType({
     }),
     defineField({
       name: 'options',
-      title: 'Dropdown Options',
+      title: 'Options',
+      description: 'Used by dropdown and checkbox questions.',
       type: 'array',
       of: [{ type: 'string' }],
-      hidden: ({ parent }) => parent?.fieldType !== 'select',
+      hidden: ({ parent }) =>
+        parent?.fieldType !== 'select' && parent?.fieldType !== 'checkbox',
       validation: Rule =>
         Rule.custom((options, context: any) => {
-          if (context.parent?.fieldType === 'select' && (!options || options.length === 0)) {
-            return 'Add at least one option for a dropdown field'
+          const fieldType = context.parent?.fieldType
+          if ((fieldType === 'select' || fieldType === 'checkbox') && (!options || options.length === 0)) {
+            return 'Add at least one option for a dropdown or checkbox field'
           }
           return true
         })

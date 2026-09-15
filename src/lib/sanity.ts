@@ -125,7 +125,7 @@ export interface ApplicationQuestion {
   _id: string
   cycle: string
   label: string
-  fieldType: 'text' | 'textarea' | 'select' | 'file'
+  fieldType: 'text' | 'textarea' | 'select' | 'checkbox' | 'file'
   options?: string[]
   required: boolean
   order?: number
@@ -578,5 +578,17 @@ export async function getPresidentName(): Promise<string> {
   } catch (error) {
     console.error('Error fetching the president name:', error)
     return 'Daniel Smith'
+  }
+}
+
+export async function getApplicationEnabled(): Promise<boolean> {
+  try {
+    const result = await client.fetch(
+      '*[_type == "chapterSettings"][0].applicationEnabled'
+    )
+    return result === true
+  } catch (error) {
+    console.error('Error fetching the application toggle:', error)
+    return false
   }
 }

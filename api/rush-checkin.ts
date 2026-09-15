@@ -30,6 +30,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (typeof eventDate !== 'string' || !eventDate.trim()) {
     return res.status(400).json({ error: 'eventDate is required' })
   }
+  const parsedEventDate = new Date(eventDate)
+  if (Number.isNaN(parsedEventDate.getTime())) {
+    return res.status(400).json({ error: 'eventDate must be a valid date' })
+  }
+  // Check-in normally happens after an event starts, so allow the rest of the
+  // day; the 24h window keeps this correct regardless of the client timezone.
+  if (parsedEventDate.getTime() < Date.now() - 24 * 60 * 60 * 1000) {
+    return res.status(400).json({ error: 'That event has already passed' })
+  }
   if (typeof cycle !== 'string' || !cycle.trim()) {
     return res.status(400).json({ error: 'cycle is required' })
   }
@@ -78,7 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await db.collection('rushCheckins').insertOne({
       eventId,
       eventName,
-      eventDate: new Date(eventDate),
+      eventDate: parsedEventDate,
       cycle,
       rusheeId: resolvedRusheeId,
       name,

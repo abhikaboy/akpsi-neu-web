@@ -32,6 +32,18 @@ function isToday(dateStr: string): boolean {
   )
 }
 
+/**
+ * Events from earlier today still count — check-in usually happens once the
+ * event is underway — but anything from a previous day is over and done with.
+ */
+function isPastEvent(dateStr: string): boolean {
+  const date = new Date(dateStr)
+  if (Number.isNaN(date.getTime())) return false
+  const startOfToday = new Date()
+  startOfToday.setHours(0, 0, 0, 0)
+  return date < startOfToday
+}
+
 function formatEventTime(dateStr: string): string {
   return new Date(dateStr).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }
@@ -73,10 +85,12 @@ function RushCheckin() {
     Promise.allSettled([getRushEvents(), fetchRushees()])
       .then(([eventResult, rusheeResult]) => {
         if (eventResult.status === 'fulfilled') {
-          setEvents(eventResult.value)
+          // Past events can't be checked into, so don't offer them at all.
+          const selectable = eventResult.value.filter(e => !isPastEvent(e.date))
+          setEvents(selectable)
           // Default to an event happening today when there is one, so the
           // common case is a single tap.
-          setEventId(defaultEventId(eventResult.value))
+          setEventId(defaultEventId(selectable))
         } else {
           setError('Failed to load rush events. Please refresh and try again.')
         }
@@ -109,6 +123,10 @@ function RushCheckin() {
     const event = events.find(ev => ev._id === eventId)
     if (!event) {
       toast.error('Please select an event.')
+      return
+    }
+    if (isPastEvent(event.date)) {
+      toast.error('That event has already passed.')
       return
     }
     if (isFirstEvent) {

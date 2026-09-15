@@ -19,6 +19,14 @@ export default defineType({
       validation: Rule => Rule.required().error('An active cycle is required')
     }),
     defineField({
+      name: 'applicationEnabled',
+      title: 'Enable Application',
+      type: 'boolean',
+      description:
+        'When off, the public Apply page is hidden from navigation and tells visitors applications are closed.',
+      initialValue: false
+    }),
+    defineField({
       name: 'presidentName',
       title: 'President Name',
       type: 'string',
@@ -27,11 +35,15 @@ export default defineType({
     })
   ],
   preview: {
-    select: { activeCycle: 'activeCycle', presidentName: 'presidentName' },
-    prepare({ activeCycle, presidentName }) {
+    select: {
+      activeCycle: 'activeCycle',
+      presidentName: 'presidentName',
+      applicationEnabled: 'applicationEnabled'
+    },
+    prepare({ activeCycle, presidentName, applicationEnabled }) {
       return {
         title: 'Chapter Settings',
-        subtitle: `Active cycle: ${activeCycle || 'none'} • President: ${presidentName || 'none'}`
+        subtitle: `Active cycle: ${activeCycle || 'none'} • Application: ${applicationEnabled ? 'on' : 'off'} • President: ${presidentName || 'none'}`
       }
     }
   }
