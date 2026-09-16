@@ -39,7 +39,9 @@ const NAV_ITEMS: AdminNavItem[] = [
 		path: "/admin/invitational-sheet",
 		icon: Table,
 	},
-	{ name: "Deliberate", path: "/admin/deliberate", icon: Scale },
+	// Deliberate is hidden from the sidebar for now. The /admin/deliberate route
+	// still works for anyone who has the link — only the nav entry is gone.
+	// { name: "Deliberate", path: "/admin/deliberate", icon: Scale },
 ];
 
 interface AdminLayoutProps {
