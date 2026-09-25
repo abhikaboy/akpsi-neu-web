@@ -29,7 +29,9 @@ export async function checkApplicationStatus(params: {
 	if (params.rusheeId) search.set("rusheeId", params.rusheeId);
 	if (params.email) search.set("email", params.email);
 
-	const res = await fetch(`/api/application-status?${search}`);
+	// Status check rides on the same /api/apply function as submit (GET vs POST)
+	// to stay under Vercel's Hobby serverless-function limit.
+	const res = await fetch(`/api/apply?${search}`);
 	if (!res.ok) throw new Error(await readError(res));
 	return res.json();
 }

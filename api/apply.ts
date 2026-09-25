@@ -24,9 +24,18 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const ALREADY_SUBMITTED = 'You have already submitted an application'
 
+/**
+ * GET: check whether an application already exists for this cycle (used by the
+ * apply form when a rushee is selected). Kept on the same function as POST so
+ * we stay under the Hobby plan's 12-function limit.
+ * POST: submit a new application.
+ */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'GET') {
+    return handleStatusCheck(req, res)
+  }
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST')
+    res.setHeader('Allow', 'GET, POST')
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
@@ -92,5 +101,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (err) {
     console.error('Failed to save application:', err)
     return res.status(500).json({ error: 'Failed to save application' })
+  }
+}
+
+async function handleStatusCheck(req: VercelRequest, res: VercelResponse) {
+  const cycle = typeof req.query.cycle === 'string' ? req.query.cycle.trim() : ''
+  const rusheeId =
+    typeof req.query.rusheeId === 'string' ? req.query.rusheeId.trim() : ''
+  const email = typeof req.query.email === 'string' ? req.query.email.trim() : ''
+
+  if (!cycle) {
+    return res.status(400).json({ error: 'cycle is required' })
+  }
+  if (!rusheeId && !email) {
+    return res.status(400).json({ error: 'rusheeId or email is required' })
+  }
+  if (rusheeId && !ObjectId.isValid(rusheeId)) {
+    return res.status(400).json({ error: 'rusheeId must be a valid id' })
+  }
+
+  try {
+    const db = await getDb()
+    const clauses: Record<string, unknown>[] = []
+    if (rusheeId) {
+      clauses.push({ rusheeId: new ObjectId(rusheeId) })
+    }
+    if (email) {
+      clauses.push({
+        email: {
+          $regex: `^${escapeRegex(normalizeEmail(email))}$`,
+          $options: 'i',
+        },
+      })
+    }
+
+    const existing = await db.collection('applications').findOne(
+      { cycle, $or: clauses },
+      { projection: { _id: 1, name: 1 } },
+    )
+
+    return res.status(200).json({
+      submitted: Boolean(existing),
+      name: existing?.name ?? null,
+    })
+  } catch (err) {
+    console.error('Failed to check application status:', err)
+    return res.status(500).json({ error: 'Failed to check application status' })
   }
 }
