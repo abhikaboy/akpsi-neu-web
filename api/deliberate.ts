@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { sendCachedJson } from './_lib/http.js'
 import { getSession } from './_lib/auth.js'
 import { EVAL_FORM_TYPES, type EvalFormType } from './_lib/evaluations.js'
+import { type Db, ObjectId } from 'mongodb'
 import { getDb, normalizeEmail } from './_lib/mongo.js'
 
 interface FormSummary {
@@ -122,6 +123,43 @@ const IMAGE_ANSWERS_ONLY = {
   },
 }
 
+/**
+ * Loads the application answers and evaluation responses for one merged
+ * profile. The list pass already established exactly which documents make up
+ * this candidate, so these are read back by _id: an indexed lookup of a handful
+ * of documents, and immune to however the addresses on them were cased.
+ */
+async function attachFullAnswers(db: Db, profile: any): Promise<void> {
+  const evaluationIds = profile.evaluations.map((e: any) => new ObjectId(e._id))
+  const applicationId = profile.application ? new ObjectId(profile.application._id) : null
+
+  const [applicationDoc, evaluationDocs] = await Promise.all([
+    applicationId
+      ? db.collection('applications').findOne({ _id: applicationId }, { projection: { answers: 1 } })
+      : null,
+    evaluationIds.length
+      ? db
+          .collection('evaluations')
+          .find({ _id: { $in: evaluationIds } }, { projection: { responses: 1 } })
+          .toArray()
+      : [],
+  ])
+
+  if (profile.application) {
+    profile.application.answers = Array.isArray(applicationDoc?.answers)
+      ? applicationDoc.answers
+      : []
+  }
+
+  const responsesById = new Map(
+    evaluationDocs.map((doc) => [String(doc._id), doc.responses]),
+  )
+  for (const evaluation of profile.evaluations) {
+    const responses = responsesById.get(evaluation._id)
+    evaluation.responses = Array.isArray(responses) ? responses : []
+  }
+}
+
 /** Read-only: every source we hold on one applicant, joined on their email. */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -140,31 +178,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const db = await getDb()
 
-    // Profiles are merged across emails before the requested candidate can be
-    // picked out, so both modes read the same rows; only the heavy per-document
-    // arrays differ.
-    const applicationProjection = detailEmail
-      ? { $project: { name: 1, email: 1, cycle: 1, status: 1, submittedAt: 1, answers: 1 } }
-      : {
-          $project: {
-            name: 1,
-            email: 1,
-            cycle: 1,
-            status: 1,
-            submittedAt: 1,
-            answers: IMAGE_ANSWERS_ONLY,
-          },
-        }
-
-    const evaluationProjection = detailEmail
-      ? {}
-      : { projection: { responses: 0 } }
-
+    // Both modes read the cycle light, because a candidate can only be picked
+    // out after profiles have been merged across their addresses. A detail
+    // request then reads that one candidate's heavy fields back by _id — doing
+    // it here instead would mean pulling every essay in the cycle to answer a
+    // question about one person.
     const [applications, evaluations, checkins] = await Promise.all([
-      db.collection('applications').aggregate([{ $match: cycleFilter }, applicationProjection]).toArray(),
+      db
+        .collection('applications')
+        .aggregate([
+          { $match: cycleFilter },
+          {
+            $project: {
+              name: 1,
+              email: 1,
+              cycle: 1,
+              status: 1,
+              submittedAt: 1,
+              answers: IMAGE_ANSWERS_ONLY,
+            },
+          },
+        ])
+        .toArray(),
       db
         .collection('evaluations')
-        .find(cycleFilter, evaluationProjection)
+        .find(cycleFilter, { projection: { responses: 0 } })
         .sort({ submittedAt: -1 })
         .toArray(),
       db.collection('rushCheckins').find(cycleFilter).sort({ eventDate: 1 }).toArray(),
@@ -216,9 +254,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         _id: String(app._id),
         status: app.status ?? 'new',
         submittedAt: app.submittedAt ?? null,
-        // Absent in list mode: the field is omitted rather than sent empty, so
-        // a consumer that needs answers fails loudly instead of rendering none.
-        ...(detailEmail ? { answers: Array.isArray(app.answers) ? app.answers : [] } : {}),
+        // Filled in by attachFullAnswers for a detail request. Omitted rather
+        // than sent empty on the list, so a consumer that needs the answers
+        // fails loudly instead of quietly rendering none.
       }
       profile.photoUrl = findPhotoUrl(app.answers)
     }
@@ -239,9 +277,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         evaluatorName: evaluation.evaluatorName ?? 'Unknown',
         rawAverage: evaluation.rawAverage ?? null,
         normalizedScore: evaluation.normalizedScore ?? null,
-        ...(detailEmail
-          ? { responses: Array.isArray(evaluation.responses) ? evaluation.responses : [] }
-          : {}),
         submittedAt: evaluation.submittedAt ?? null,
       })
     }
@@ -306,6 +341,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         (p) => p.email === detailEmail || p.aliasEmails.includes(detailEmail),
       )
       if (!profile) return res.status(404).json({ error: 'Candidate not found' })
+      await attachFullAnswers(db, profile)
       return sendCachedJson(req, res, { profile })
     }
 

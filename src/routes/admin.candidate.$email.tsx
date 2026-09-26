@@ -1,26 +1,31 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AdminGate from "../components/admin/AdminGate";
-import PasswordGate from "../components/admin/PasswordGate";
 import CandidateDetail, {
 	candidatePhoto,
 } from "../components/admin/CandidateDetail";
 import { Headshot } from "../components/admin/Headshot";
+import PasswordGate from "../components/admin/PasswordGate";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "../components/ui/popover";
-import { Input } from "../components/ui/input";
 import { useActiveCycle } from "../lib/activeCycle";
 import {
+	type DeliberationProfile,
 	fetchCandidateProfile,
 	fetchDeliberation,
-	type DeliberationProfile,
 } from "../lib/adminEvals";
 import { getDeliberationPassword } from "../lib/sanity";
 
@@ -35,7 +40,9 @@ function AdminCandidatePage() {
 	const [password, setPassword] = useState<string | null>(null);
 
 	useEffect(() => {
-		getDeliberationPassword().then(setPassword).catch(() => setPassword("miffy"));
+		getDeliberationPassword()
+			.then(setPassword)
+			.catch(() => setPassword("miffy"));
 	}, []);
 
 	return (
@@ -70,8 +77,12 @@ function CandidatePage({
 	viewerEmail: string;
 }) {
 	const navigate = useNavigate();
-	const { cycle, label: cycleLabel, loading: cycleLoading, error: cycleError } =
-		useActiveCycle();
+	const {
+		cycle,
+		label: cycleLabel,
+		loading: cycleLoading,
+		error: cycleError,
+	} = useActiveCycle();
 
 	const [profiles, setProfiles] = useState<DeliberationProfile[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -118,7 +129,17 @@ function CandidatePage({
 			.then((next) => {
 				if (!cancelled) setDetail(next);
 			})
-			.catch(() => {});
+			.catch((err) => {
+				// Swallowing this is what let a timed-out detail request show up as
+				// a page of blank notes rather than as a failure.
+				if (!cancelled) {
+					setError(
+						err instanceof Error
+							? `Could not load the full record: ${err.message}`
+							: "Could not load the full record.",
+					);
+				}
+			});
 		return () => {
 			cancelled = true;
 		};

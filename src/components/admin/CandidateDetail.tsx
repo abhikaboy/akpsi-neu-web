@@ -1,14 +1,14 @@
 import { AlertTriangle, Check, Star } from "lucide-react";
 import { useMemo } from "react";
-import CandidateChat from "./CandidateChat";
-import { findImageAnswer, Headshot, isImageUrl } from "./Headshot";
-import { Separator } from "../ui/separator";
-import { Badge } from "../ui/badge";
 import {
-	REQUIRED_EVENT_COUNT,
 	type DeliberationProfile,
+	REQUIRED_EVENT_COUNT,
 } from "../../lib/adminEvals";
 import type { EvalFormType } from "../../lib/sanity";
+import { Badge } from "../ui/badge";
+import { Separator } from "../ui/separator";
+import CandidateChat from "./CandidateChat";
+import { Headshot, findImageAnswer, isImageUrl } from "./Headshot";
 
 type ProfileEvaluation = DeliberationProfile["evaluations"][number];
 
@@ -191,10 +191,24 @@ export default function CandidateDetail({
 	cycle: string;
 	viewerEmail: string;
 }) {
+	// The roster omits application answers and evaluation responses, so a profile
+	// that still has none is the light list copy and the detail request has not
+	// landed yet. Saying so beats rendering an empty grid and a column of dashes,
+	// which is indistinguishable from a candidate nobody has written anything about.
+	const detailPending =
+		(profile.application != null &&
+			profile.application.answers === undefined) ||
+		(profile.evaluations ?? []).some((e) => e.responses === undefined);
+
 	return (
 		<div className="space-y-6">
 			<section>
 				<h3 className="text-sm font-semibold mb-3">Application</h3>
+				{detailPending && (
+					<p className="mb-3 text-xs text-muted-foreground">
+						Loading the full record...
+					</p>
+				)}
 				{profile.application ? (
 					<>
 						<p className="text-xs text-muted-foreground mb-3">
@@ -213,7 +227,11 @@ export default function CandidateDetail({
 											rel="noreferrer"
 											className="inline-block mt-1"
 										>
-											<Headshot src={answer.value} name={profile.name} size={64} />
+											<Headshot
+												src={answer.value}
+												name={profile.name}
+												size={64}
+											/>
 										</a>
 									) : FILE_RE.test(answer.value) ? (
 										<a
@@ -300,7 +318,10 @@ function EvalFormSection({
 		const labels: string[] = [];
 		for (const evaluation of evaluations) {
 			for (const response of evaluation.responses ?? []) {
-				if (response.fieldType === "score" && !labels.includes(response.label)) {
+				if (
+					response.fieldType === "score" &&
+					!labels.includes(response.label)
+				) {
 					labels.push(response.label);
 				}
 			}

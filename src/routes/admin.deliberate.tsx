@@ -1,8 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import AdminGate from "../components/admin/AdminGate";
-import PasswordGate from "../components/admin/PasswordGate";
 import CandidateDetail, {
 	AttendanceBadge,
 	CandidateScoreStrip,
@@ -11,6 +11,7 @@ import CandidateDetail, {
 	FORM_LABELS,
 } from "../components/admin/CandidateDetail";
 import { Headshot } from "../components/admin/Headshot";
+import PasswordGate from "../components/admin/PasswordGate";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import {
@@ -30,12 +31,12 @@ import {
 import { Separator } from "../components/ui/separator";
 import { useActiveCycle } from "../lib/activeCycle";
 import {
+	type DeliberationProfile,
+	REQUIRED_EVENT_COUNT,
 	fetchCandidateProfile,
 	fetchDeliberation,
-	REQUIRED_EVENT_COUNT,
-	type DeliberationProfile,
 } from "../lib/adminEvals";
-import { getDeliberationPassword, type EvalFormType } from "../lib/sanity";
+import { type EvalFormType, getDeliberationPassword } from "../lib/sanity";
 
 export const Route = createFileRoute("/admin/deliberate")({
 	component: AdminDeliberate,
@@ -144,7 +145,9 @@ function AdminDeliberate() {
 	const [password, setPassword] = useState<string | null>(null);
 
 	useEffect(() => {
-		getDeliberationPassword().then(setPassword).catch(() => setPassword("miffy"));
+		getDeliberationPassword()
+			.then(setPassword)
+			.catch(() => setPassword("miffy"));
 	}, []);
 
 	return (
@@ -563,7 +566,15 @@ function ProfileRow({
 			.then((next) => {
 				if (!cancelled && next) setDetail(next);
 			})
-			.catch(() => {});
+			.catch((err) => {
+				if (!cancelled) {
+					toast.error(
+						err instanceof Error
+							? `Could not load the full record: ${err.message}`
+							: "Could not load the full record.",
+					);
+				}
+			});
 		return () => {
 			cancelled = true;
 		};
