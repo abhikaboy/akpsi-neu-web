@@ -352,26 +352,28 @@ function EvalFormSection({
 				<table className="w-full text-sm">
 					<thead>
 						<tr className="bg-muted/50 text-left text-xs text-muted-foreground">
-							<th className="px-3 py-2 font-medium whitespace-nowrap">
+							{/* The evaluator and score columns shrink to their content so
+							    Notes absorbs whatever width is left over. */}
+							<th className="w-px px-3 py-2 font-medium whitespace-nowrap">
 								Evaluator
 							</th>
 							{criteriaLabels.map((label) => (
 								<th
 									key={label}
-									className="px-3 py-2 font-medium whitespace-nowrap uppercase"
+									className="w-px px-3 py-2 font-medium whitespace-nowrap uppercase"
 									title={label}
 								>
 									{label.split(" ")[0]}
 								</th>
 							))}
-							<th className="px-3 py-2 font-medium">Notes</th>
+							<th className="w-full px-3 py-2 font-medium">Notes</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr className="border-t bg-muted/30 font-semibold">
-							<td className="px-3 py-2 whitespace-nowrap">Average</td>
+							<td className="w-px px-3 py-2 whitespace-nowrap">Average</td>
 							{averages.map((average, i) => (
-								<td key={criteriaLabels[i]} className="px-3 py-2">
+								<td key={criteriaLabels[i]} className="w-px px-3 py-2">
 									{average == null ? "—" : average.toFixed(1)}
 								</td>
 							))}
@@ -379,7 +381,7 @@ function EvalFormSection({
 						</tr>
 						{evaluations.map((evaluation) => (
 							<tr key={evaluation._id} className="border-t hover:bg-muted/20">
-								<td className="px-3 py-2 whitespace-nowrap">
+								<td className="w-px px-3 py-2 whitespace-nowrap">
 									{evaluation.evaluatorName}
 								</td>
 								{criteriaLabels.map((label) => {
@@ -387,12 +389,12 @@ function EvalFormSection({
 										(r) => r.label === label,
 									);
 									return (
-										<td key={label} className="px-3 py-2">
+										<td key={label} className="w-px px-3 py-2">
 											{response?.score ?? "—"}
 										</td>
 									);
 								})}
-								<td className="px-3 py-2 break-words whitespace-pre-wrap max-w-xs">
+								<td className="w-full min-w-[18rem] px-3 py-2 break-words whitespace-pre-wrap">
 									{notesFor(evaluation) || "—"}
 								</td>
 							</tr>
