@@ -20,7 +20,8 @@ function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+// Applicants must use their school email, same rule the rush check-in enforces.
+const EMAIL_RE = /^[^\s@]+@northeastern\.edu$/i
 
 const ALREADY_SUBMITTED = 'You have already submitted an application'
 
@@ -48,7 +49,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'A valid name is required' })
   }
   if (typeof email !== 'string' || !EMAIL_RE.test(email) || email.length > 200) {
-    return res.status(400).json({ error: 'A valid email is required' })
+    return res.status(400).json({ error: 'A valid @northeastern.edu email is required' })
   }
   if (!Array.isArray(answers) || answers.length > 100 || !answers.every(isAnswer)) {
     return res.status(400).json({ error: 'answers must be an array of {label, value}' })

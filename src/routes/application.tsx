@@ -29,6 +29,9 @@ import { uploadApplicationFile } from "../lib/uploads";
 // Long answers are capped so readers get comparable, skimmable responses.
 const LONG_ANSWER_WORD_LIMIT = 150;
 
+/** Applications are limited to school emails, same as the rush check-in. */
+const NORTHEASTERN_EMAIL_RE = /^[^\s@]+@northeastern\.edu$/i;
+
 const ALREADY_SUBMITTED_MESSAGE = "You have already submitted an application";
 
 const countWords = (value: string) =>
@@ -152,6 +155,10 @@ function Application() {
 		}
 		if (!name.trim() || !email.trim()) {
 			toast.error("Please enter your name and email.");
+			return;
+		}
+		if (!NORTHEASTERN_EMAIL_RE.test(email.trim())) {
+			toast.error("Please use your @northeastern.edu email.");
 			return;
 		}
 		if (uploadingIds.size > 0) {
@@ -319,9 +326,13 @@ function Application() {
 								<Input
 									id="email"
 									type="email"
+									placeholder="you@northeastern.edu"
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
 								/>
+								<p className="text-xs text-muted-foreground mt-1">
+									Use your @northeastern.edu email.
+								</p>
 							</div>
 							{questions.map((q) => (
 								<div key={q._id}>
