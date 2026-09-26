@@ -83,14 +83,20 @@ function CandidatePage({
 		[profiles],
 	);
 	const profile = sortedProfiles.find(
-		(p) => p.email.toLowerCase() === decodedEmail,
+		(p) =>
+			p.email.toLowerCase() === decodedEmail ||
+			(p.aliasEmails ?? []).some(
+				(alias) => alias.toLowerCase() === decodedEmail,
+			),
 	);
 
 	const filteredProfiles = useMemo(() => {
 		const query = search.trim().toLowerCase();
 		if (!query) return sortedProfiles;
 		return sortedProfiles.filter((p) =>
-			`${p.name} ${p.email}`.toLowerCase().includes(query),
+			`${p.name} ${p.email} ${(p.aliasEmails ?? []).join(" ")}`
+				.toLowerCase()
+				.includes(query),
 		);
 	}, [sortedProfiles, search]);
 
@@ -199,6 +205,11 @@ function CandidatePage({
 								<p className="text-sm text-muted-foreground truncate">
 									{profile.email}
 								</p>
+								{(profile.aliasEmails ?? []).length > 0 && (
+									<p className="text-xs text-muted-foreground truncate">
+										also {profile.aliasEmails.join(", ")}
+									</p>
+								)}
 								<p className="text-xs text-muted-foreground mt-1">
 									{profile.totalEvaluations} eval
 									{profile.totalEvaluations === 1 ? "" : "s"} on file

@@ -21,6 +21,61 @@ const INFO_SESSION_RE = /info\s*(session|night)|co[\s-]?op\s*panel/i
 /** Events a rushee must attend for their rush to count. */
 const REQUIRED_EVENT_COUNT = 3
 
+/** Case- and spacing-insensitive key used to spot one person under two emails. */
+function nameKey(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+/**
+ * Rushees who check in with one address and apply with another show up as two
+ * profiles. Where the name matches exactly we fold them into a single record,
+ * keeping the address that carries the application as the canonical one and
+ * listing the rest as aliases.
+ */
+function mergeByName(profiles: Map<string, any>): Map<string, any> {
+  const byName = new Map<string, any[]>()
+  for (const profile of profiles.values()) {
+    const key = nameKey(profile.name)
+    const group = byName.get(key)
+    if (group) group.push(profile)
+    else byName.set(key, [profile])
+  }
+
+  const merged = new Map<string, any>()
+  for (const group of byName.values()) {
+    if (group.length === 1) {
+      merged.set(group[0].email, group[0])
+      continue
+    }
+
+    // The application is the record a human filled in deliberately, so its
+    // email wins; otherwise fall back to whoever has the most evaluations.
+    const primary =
+      group.find((p) => p.application) ??
+      group.reduce((best, p) => (p.evaluations.length > best.evaluations.length ? p : best))
+
+    for (const other of group) {
+      if (other === primary) continue
+      primary.aliasEmails.push(other.email, ...other.aliasEmails)
+      primary.application ??= other.application
+      primary.photoUrl ??= other.photoUrl
+      primary.cycle ||= other.cycle
+      primary.evaluations.push(...other.evaluations)
+      for (const formType of other.myFormTypes) {
+        if (!primary.myFormTypes.includes(formType)) primary.myFormTypes.push(formType)
+      }
+      for (const event of other.attendance) {
+        if (!primary.attendance.some((e: any) => e.eventId === event.eventId)) {
+          primary.attendance.push(event)
+        }
+      }
+    }
+    primary.aliasEmails = Array.from(new Set(primary.aliasEmails)).sort()
+    merged.set(primary.email, primary)
+  }
+  return merged
+}
+
 /**
  * Applicants have no profile record, so their avatar is whatever image they
  * uploaded on the application (a headshot question, typically). PDFs and other
@@ -65,6 +120,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!profile) {
         profile = {
           email,
+          // Other addresses folded into this profile by an exact name match.
+          aliasEmails: [] as string[],
           name,
           cycle: cycleValue,
           application: null,
@@ -144,9 +201,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
+    const mergedProfiles = mergeByName(profiles)
+
     // Per-form averages, then one overall figure across every form so the table
     // can be ranked at a glance.
-    for (const profile of profiles.values()) {
+    for (const profile of mergedProfiles.values()) {
       const allScores: number[] = []
       for (const formType of EVAL_FORM_TYPES) {
         const forForm = profile.evaluations.filter((e: any) => e.formType === formType)
@@ -172,7 +231,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         : null
     }
 
-    const sorted = Array.from(profiles.values()).sort((a, b) => {
+    const sorted = Array.from(mergedProfiles.values()).sort((a, b) => {
       if (a.overallScore === b.overallScore) return a.name.localeCompare(b.name)
       if (a.overallScore === null) return 1
       if (b.overallScore === null) return -1

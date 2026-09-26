@@ -209,7 +209,9 @@ function Deliberation({ viewerEmail }: { viewerEmail: string }) {
 		return profiles.filter((profile) => {
 			if (
 				query &&
-				!`${profile.name} ${profile.email}`.toLowerCase().includes(query)
+				!`${profile.name} ${profile.email} ${(profile.aliasEmails ?? []).join(" ")}`
+					.toLowerCase()
+					.includes(query)
 			) {
 				return false;
 			}
@@ -556,6 +558,11 @@ function ProfileRow({
 							<p className="text-sm text-muted-foreground truncate">
 								{profile.email}
 							</p>
+							{(profile.aliasEmails ?? []).length > 0 && (
+								<p className="text-xs text-muted-foreground truncate">
+									also {profile.aliasEmails.join(", ")}
+								</p>
+							)}
 						</div>
 					</Link>
 

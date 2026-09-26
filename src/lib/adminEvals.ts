@@ -49,6 +49,8 @@ export interface FormSummary {
 
 export interface DeliberationProfile {
 	email: string;
+	/** Other addresses merged into this profile by an exact name match. */
+	aliasEmails: string[];
 	name: string;
 	cycle: string;
 	application: {
