@@ -18,6 +18,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         allowedContentTypes: ALLOWED_CONTENT_TYPES,
         maximumSizeInBytes: MAX_SIZE_BYTES,
         addRandomSuffix: true,
+        // Uploads are immutable (random suffix per file), so let browsers and
+        // the CDN hold them for a year instead of re-downloading them.
+        cacheControlMaxAge: 31536000,
       }),
       onUploadCompleted: async () => {},
     })

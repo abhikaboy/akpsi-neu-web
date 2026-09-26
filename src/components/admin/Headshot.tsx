@@ -28,13 +28,36 @@ interface HeadshotProps {
 	size?: number;
 }
 
+/** Widths declared under `images.sizes` in vercel.json. */
+const OPTIMIZER_WIDTHS = [64, 96, 128, 256, 384];
+
+/**
+ * Headshots are uploaded at full camera resolution (up to 10MB) but displayed
+ * at 44-64px, so serving the originals burned through the Blob data transfer
+ * allowance. Routing them through Vercel's image optimizer returns a resized
+ * webp of a few KB instead, cached at the edge for a year.
+ *
+ * The optimizer only exists on Vercel, so local dev falls back to the original.
+ */
+export function optimizedImageUrl(src: string, size: number): string {
+	if (!import.meta.env.PROD) return src;
+	// Request 2x for retina, rounded up to the nearest declared width.
+	const target = size * 2;
+	const width =
+		OPTIMIZER_WIDTHS.find((w) => w >= target) ??
+		OPTIMIZER_WIDTHS[OPTIMIZER_WIDTHS.length - 1];
+	return `/_vercel/image?url=${encodeURIComponent(src)}&w=${width}&q=75`;
+}
+
 /** Circular applicant picture, falling back to initials when there's no image. */
 export function Headshot({ src, name = "", size = 40 }: HeadshotProps) {
 	if (src) {
 		return (
 			<img
-				src={src}
+				src={optimizedImageUrl(src, size)}
 				alt={name ? `${name}'s headshot` : "Headshot"}
+				loading="lazy"
+				decoding="async"
 				className="rounded-full object-cover border shrink-0"
 				style={{ width: size, height: size }}
 			/>
