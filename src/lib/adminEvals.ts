@@ -1,4 +1,10 @@
 import { readError } from "./adminApplications";
+import {
+	NOT_MODIFIED,
+	hasCached,
+	invalidateApiCache,
+	swrJson,
+} from "./apiCache";
 import type { EvalFormType } from "./sanity";
 
 export interface EvalResponseValue {
@@ -93,9 +99,41 @@ async function getJson<T>(url: string): Promise<Partial<T>> {
 	return (await res.json()) as Partial<T>;
 }
 
-export async function fetchRushees(cycle?: string): Promise<Rushee[]> {
+/**
+ * As getJson, but reports a bare 304 instead of failing on it. A 304 carries no
+ * body and is not `res.ok`, so it has to be separated from a real error before
+ * the status check.
+ */
+async function getJsonRevalidating<T>(
+	url: string,
+): Promise<Partial<T> | typeof NOT_MODIFIED> {
+	const res = await fetch(url);
+	if (res.status === 401) throw new Error("unauthenticated");
+	if (res.status === 304 && hasCached(url)) return NOT_MODIFIED;
+	if (!res.ok) throw new Error(await readError(res));
+	return (await res.json()) as Partial<T>;
+}
+
+/**
+ * Serves the previous body for this URL straight away, then revalidates and
+ * calls `onUpdate` if anything changed. See src/lib/apiCache.ts.
+ */
+function getJsonCached<T>(
+	url: string,
+	onUpdate?: (fresh: Partial<T>) => void,
+): Promise<Partial<T>> {
+	return swrJson(url, getJsonRevalidating<T>, onUpdate);
+}
+
+export async function fetchRushees(
+	cycle?: string,
+	onUpdate?: (roster: Rushee[]) => void,
+): Promise<Rushee[]> {
 	const query = cycle ? `?cycle=${encodeURIComponent(cycle)}` : "";
-	const body = await getJson<{ roster: Rushee[] }>(`/api/eval-roster${query}`);
+	const body = await getJsonCached<{ roster: Rushee[] }>(
+		`/api/eval-roster${query}`,
+		(fresh) => onUpdate?.(fresh.roster ?? []),
+	);
 	return body.roster ?? [];
 }
 
@@ -105,6 +143,8 @@ export async function fetchEvaluations(filters?: {
 	applicantEmail?: string;
 	/** Restrict to the signed-in brother's own evaluations. */
 	mine?: boolean;
+	/** Called if a background revalidation turns up different data. */
+	onUpdate?: (evaluations: EvaluationRecord[]) => void;
 }): Promise<EvaluationRecord[]> {
 	const params = new URLSearchParams();
 	if (filters?.formType) params.set("formType", filters.formType);
@@ -113,8 +153,9 @@ export async function fetchEvaluations(filters?: {
 		params.set("applicantEmail", filters.applicantEmail);
 	if (filters?.mine) params.set("mine", "true");
 	const query = params.toString();
-	const body = await getJson<{ evaluations: EvaluationRecord[] }>(
+	const body = await getJsonCached<{ evaluations: EvaluationRecord[] }>(
 		`/api/evaluations${query ? `?${query}` : ""}`,
+		(fresh) => filters?.onUpdate?.(fresh.evaluations ?? []),
 	);
 	return body.evaluations ?? [];
 }
@@ -126,10 +167,12 @@ export async function fetchEvaluations(filters?: {
  */
 export async function fetchDeliberation(
 	cycle?: string,
+	onUpdate?: (profiles: DeliberationProfile[]) => void,
 ): Promise<DeliberationProfile[]> {
 	const query = cycle ? `?cycle=${encodeURIComponent(cycle)}` : "";
-	const body = await getJson<{ profiles: DeliberationProfile[] }>(
+	const body = await getJsonCached<{ profiles: DeliberationProfile[] }>(
 		`/api/deliberate${query}`,
+		(fresh) => onUpdate?.(fresh.profiles ?? []),
 	);
 	return body.profiles ?? [];
 }
@@ -138,11 +181,13 @@ export async function fetchDeliberation(
 export async function fetchCandidateProfile(
 	email: string,
 	cycle?: string,
+	onUpdate?: (profile: DeliberationProfile | null) => void,
 ): Promise<DeliberationProfile | null> {
 	const params = new URLSearchParams({ email });
 	if (cycle) params.set("cycle", cycle);
-	const body = await getJson<{ profile: DeliberationProfile }>(
+	const body = await getJsonCached<{ profile: DeliberationProfile }>(
 		`/api/deliberate?${params.toString()}`,
+		(fresh) => onUpdate?.(fresh.profile ?? null),
 	);
 	return body.profile ?? null;
 }
@@ -161,6 +206,10 @@ export async function submitEvaluation(evaluation: {
 	});
 	if (res.status === 401) throw new Error("unauthenticated");
 	if (!res.ok) throw new Error(await readError(res));
+	// A new evaluation changes the roster's scores and the candidate's detail,
+	// so the cached copies of both have to go before the next read.
+	invalidateApiCache("/api/evaluations");
+	invalidateApiCache("/api/deliberate");
 }
 
 export const INTERVIEW_STAGES = [
@@ -215,7 +264,7 @@ export interface InterviewStatusRecord {
 export async function fetchInterviewStatuses(
 	cycle: string,
 ): Promise<InterviewStatusRecord[]> {
-	const body = await getJson<{ statuses: InterviewStatusRecord[] }>(
+	const body = await getJsonCached<{ statuses: InterviewStatusRecord[] }>(
 		`/api/interview-status?cycle=${encodeURIComponent(cycle)}`,
 	);
 	return body.statuses ?? [];
@@ -240,4 +289,5 @@ export async function saveInterviewStatus(update: {
 	});
 	if (res.status === 401) throw new Error("unauthenticated");
 	if (!res.ok) throw new Error(await readError(res));
+	invalidateApiCache("/api/interview-status");
 }

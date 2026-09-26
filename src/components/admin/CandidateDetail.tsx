@@ -246,7 +246,7 @@ export default function CandidateDetail({
 			</section>
 
 			{FORM_ORDER.map((formType) => {
-				const forForm = profile.evaluations.filter(
+				const forForm = (profile.evaluations ?? []).filter(
 					(e) => e.formType === formType,
 				);
 				if (forForm.length === 0) return null;

@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { sendCachedJson } from './_lib/http.js'
 import { getSession } from './_lib/auth.js'
 import {
   isEvalFormType,
@@ -41,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         filter.evaluatorEmail = normalizeEmail(session.email)
       }
       const docs = await evaluations.find(filter).sort({ submittedAt: -1 }).toArray()
-      return res.status(200).json({ evaluations: docs })
+      return sendCachedJson(req, res, { evaluations: docs })
     }
 
     const { formType, cycle, applicantName, applicantEmail, responses } = req.body ?? {}

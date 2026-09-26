@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { sendCachedJson } from './_lib/http.js'
 import { isAuthenticated } from './_lib/auth.js'
 import { getDb, normalizeEmail } from './_lib/mongo.js'
 
@@ -62,7 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const roster = Array.from(byEmail.values()).sort((a, b) => a.name.localeCompare(b.name))
-    return res.status(200).json({ roster })
+    return sendCachedJson(req, res, { roster })
   } catch (err) {
     console.error('Failed to fetch eval roster:', err)
     return res.status(500).json({ error: 'Failed to fetch eval roster' })

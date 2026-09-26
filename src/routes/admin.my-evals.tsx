@@ -78,10 +78,10 @@ function MyEvals({ evaluatorName }: { evaluatorName: string }) {
 		}
 		setLoading(true);
 		setError(null);
-		fetchEvaluations({ cycle, mine: true })
-			.then((mine) =>
-				setEvaluations(mine.filter((e) => e.formType !== "interview")),
-			)
+		const keepNonInterview = (all: EvaluationRecord[]) =>
+			setEvaluations(all.filter((e) => e.formType !== "interview"));
+		fetchEvaluations({ cycle, mine: true, onUpdate: keepNonInterview })
+			.then(keepNonInterview)
 			.catch((err) => {
 				if (err instanceof Error && err.message === "unauthenticated") {
 					window.location.reload();

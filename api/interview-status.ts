@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { sendCachedJson } from './_lib/http.js'
 import { getSession, isAuthenticated } from './_lib/auth.js'
 import { getDb, normalizeEmail } from './_lib/mongo.js'
 
@@ -87,7 +88,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const { cycle } = req.query
       const filter = typeof cycle === 'string' && cycle ? { cycle } : {}
       const docs = await statuses.find(filter).toArray()
-      return res.status(200).json({ statuses: docs })
+      return sendCachedJson(req, res, { statuses: docs })
     }
 
     const session = getSession(req)

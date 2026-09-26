@@ -1,3 +1,4 @@
+import { NOT_MODIFIED, clearApiCache, hasCached, swrJson } from "./apiCache";
 export interface ApplicationRecord {
 	_id: string;
 	cycle: string;
@@ -43,15 +44,27 @@ export async function adminLogin(credentials: {
 
 export async function adminLogout(): Promise<void> {
 	await fetch("/api/admin-auth?action=logout", { method: "POST" });
+	// Applicant data is per-viewer and behind a login; none of it should still
+	// be in memory for whoever signs in next on this machine.
+	clearApiCache();
 }
 
 export async function fetchApplications(
 	cycle?: string,
+	onUpdate?: (applications: ApplicationRecord[]) => void,
 ): Promise<ApplicationRecord[]> {
 	const query = cycle ? `?cycle=${encodeURIComponent(cycle)}` : "";
-	const res = await fetch(`/api/applications${query}`);
-	if (res.status === 401) throw new Error("unauthenticated");
-	if (!res.ok) throw new Error(await readError(res));
-	const body = await res.json();
+	const body = await swrJson(
+		`/api/applications${query}`,
+		async (url) => {
+			const res = await fetch(url);
+			if (res.status === 401) throw new Error("unauthenticated");
+			// 304 has no body and is not `res.ok`; the cached copy is still good.
+			if (res.status === 304 && hasCached(url)) return NOT_MODIFIED;
+			if (!res.ok) throw new Error(await readError(res));
+			return (await res.json()) as { applications?: ApplicationRecord[] };
+		},
+		(fresh) => onUpdate?.(fresh.applications ?? []),
+	);
 	return body.applications ?? [];
 }

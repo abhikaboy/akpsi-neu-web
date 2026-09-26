@@ -90,7 +90,7 @@ function CandidatePage({
 		}
 		setLoading(true);
 		setError(null);
-		fetchDeliberation(cycle)
+		fetchDeliberation(cycle, setProfiles)
 			.then(setProfiles)
 			.catch((err) => {
 				if (err instanceof Error && err.message === "unauthenticated") {
@@ -112,7 +112,9 @@ function CandidatePage({
 		if (cycleLoading || !cycle) return;
 		let cancelled = false;
 		setDetail(null);
-		fetchCandidateProfile(decodedEmail, cycle)
+		fetchCandidateProfile(decodedEmail, cycle, (fresh) => {
+			if (!cancelled) setDetail(fresh);
+		})
 			.then((next) => {
 				if (!cancelled) setDetail(next);
 			})
@@ -260,7 +262,7 @@ function CandidatePage({
 								</p>
 								{(profile.aliasEmails ?? []).length > 0 && (
 									<p className="text-xs text-muted-foreground truncate">
-										also {profile.aliasEmails.join(", ")}
+										also {(profile.aliasEmails ?? []).join(", ")}
 									</p>
 								)}
 								<p className="text-xs text-muted-foreground mt-1">

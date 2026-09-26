@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { sendCachedJson } from './_lib/http.js'
 import { isAuthenticated } from './_lib/auth.js'
 import { getDb } from './_lib/mongo.js'
 
@@ -22,7 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .find(filter)
       .sort({ submittedAt: -1 })
       .toArray()
-    return res.status(200).json({ applications })
+    return sendCachedJson(req, res, { applications })
   } catch (err) {
     console.error('Failed to fetch applications:', err)
     return res.status(500).json({ error: 'Failed to fetch applications' })

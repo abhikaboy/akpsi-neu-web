@@ -203,7 +203,7 @@ function Deliberation({ viewerEmail }: { viewerEmail: string }) {
 		}
 		setLoading(true);
 		setError(null);
-		fetchDeliberation(cycle)
+		fetchDeliberation(cycle, setProfiles)
 			.then(setProfiles)
 			.catch((err) => {
 				if (err instanceof Error && err.message === "unauthenticated") {
@@ -557,7 +557,9 @@ function ProfileRow({
 	useEffect(() => {
 		if (!open || detail) return;
 		let cancelled = false;
-		fetchCandidateProfile(profile.email, cycle)
+		fetchCandidateProfile(profile.email, cycle, (fresh) => {
+			if (!cancelled && fresh) setDetail(fresh);
+		})
 			.then((next) => {
 				if (!cancelled && next) setDetail(next);
 			})

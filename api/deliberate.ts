@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { sendCachedJson } from './_lib/http.js'
 import { getSession } from './_lib/auth.js'
 import { EVAL_FORM_TYPES, type EvalFormType } from './_lib/evaluations.js'
 import { getDb, normalizeEmail } from './_lib/mongo.js'
@@ -305,10 +306,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         (p) => p.email === detailEmail || p.aliasEmails.includes(detailEmail),
       )
       if (!profile) return res.status(404).json({ error: 'Candidate not found' })
-      return res.status(200).json({ profile })
+      return sendCachedJson(req, res, { profile })
     }
 
-    return res.status(200).json({ profiles: sorted })
+    return sendCachedJson(req, res, { profiles: sorted })
   } catch (err) {
     console.error('Failed to build deliberation view:', err)
     return res.status(500).json({ error: 'Failed to build deliberation view' })

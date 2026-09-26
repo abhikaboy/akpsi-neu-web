@@ -74,7 +74,11 @@ function Interviews({ userEmail }: { userEmail: string }) {
 		}
 		setResultsLoading(true);
 		setResultsError(null);
-		fetchEvaluations({ cycle, formType: "interview" })
+		fetchEvaluations({
+			cycle,
+			formType: "interview",
+			onUpdate: setInterviews,
+		})
 			.then(setInterviews)
 			.catch((err) => {
 				if (err instanceof Error && err.message === "unauthenticated") {
