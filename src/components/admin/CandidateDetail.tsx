@@ -84,25 +84,30 @@ export function AttendanceBadge({
 	className?: string;
 }) {
 	const attended = profile.eventsAttended ?? 0;
+	const infoSessions = profile.infoSessionsAttended ?? 0;
 	const short = attended < REQUIRED_EVENT_COUNT;
+	// Green means fully in the clear: the event minimum plus an info session.
+	const fullyMet = !short && infoSessions > 0;
+	const tone = short
+		? "border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+		: fullyMet
+			? "border-green-300 bg-green-50 text-green-800 dark:bg-green-950/40 dark:text-green-200"
+			: "";
 	return (
 		<Badge
 			variant="outline"
-			className={
-				short
-					? `border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200 ${className ?? ""}`
-					: className
-			}
+			className={`${tone} ${className ?? ""}`.trim() || undefined}
 			title={
 				short
 					? `Attended ${attended} of the ${REQUIRED_EVENT_COUNT} required events`
-					: `Attended ${attended} events`
+					: fullyMet
+						? `Attended ${attended} events, including ${infoSessions} info session${infoSessions === 1 ? "" : "s"}`
+						: `Attended ${attended} events, but no info session`
 			}
 		>
 			{short && <AlertTriangle className="size-3" aria-hidden />}
 			{attended} event{attended === 1 ? "" : "s"}
-			{(profile.infoSessionsAttended ?? 0) > 0 &&
-				` · ${profile.infoSessionsAttended} info`}
+			{infoSessions > 0 && ` · ${infoSessions} info`}
 		</Badge>
 	);
 }
