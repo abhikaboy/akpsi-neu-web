@@ -549,9 +549,19 @@ function ProfileRow({
 									{profile.name}
 								</CardTitle>
 								{profile.application ? (
-									<Badge variant="outline">{profile.application.status}</Badge>
+									<Badge
+										variant="outline"
+										className="border-green-300 bg-green-50 text-green-800 dark:bg-green-950/40 dark:text-green-200"
+									>
+										{profile.application.status}
+									</Badge>
 								) : (
-									<Badge variant="outline">No application</Badge>
+									<Badge
+										variant="outline"
+										className="border-yellow-300 bg-yellow-50 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-200"
+									>
+										No application
+									</Badge>
 								)}
 								<AttendanceBadge profile={profile} />
 							</div>
