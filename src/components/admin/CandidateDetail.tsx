@@ -1,10 +1,14 @@
-import { Check } from "lucide-react";
+import { AlertTriangle, Check, Star } from "lucide-react";
 import { useMemo } from "react";
 import CandidateChat from "./CandidateChat";
 import PresenceIndicator from "./PresenceIndicator";
 import { findImageAnswer, Headshot, isImageUrl } from "./Headshot";
 import { Separator } from "../ui/separator";
-import type { DeliberationProfile } from "../../lib/adminEvals";
+import { Badge } from "../ui/badge";
+import {
+	REQUIRED_EVENT_COUNT,
+	type DeliberationProfile,
+} from "../../lib/adminEvals";
 import type { EvalFormType } from "../../lib/sanity";
 
 type ProfileEvaluation = DeliberationProfile["evaluations"][number];
@@ -64,6 +68,100 @@ export function CandidateScoreStrip({
 					</div>
 				);
 			})}
+		</div>
+	);
+}
+
+/**
+ * Event count with a mild flag when the rushee is short of the attendance
+ * requirement. Shown next to the name in both the list row and the full page.
+ */
+export function AttendanceBadge({
+	profile,
+	className,
+}: {
+	profile: DeliberationProfile;
+	className?: string;
+}) {
+	const attended = profile.eventsAttended ?? 0;
+	const short = attended < REQUIRED_EVENT_COUNT;
+	return (
+		<Badge
+			variant="outline"
+			className={
+				short
+					? `border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200 ${className ?? ""}`
+					: className
+			}
+			title={
+				short
+					? `Attended ${attended} of the ${REQUIRED_EVENT_COUNT} required events`
+					: `Attended ${attended} events`
+			}
+		>
+			{short && <AlertTriangle className="size-3" aria-hidden />}
+			{attended} event{attended === 1 ? "" : "s"}
+			{(profile.infoSessionsAttended ?? 0) > 0 &&
+				` · ${profile.infoSessionsAttended} info`}
+		</Badge>
+	);
+}
+
+/** Every rush event the candidate checked into, info sessions called out. */
+function AttendanceSection({ profile }: { profile: DeliberationProfile }) {
+	const attendance = profile.attendance ?? [];
+	const attended = attendance.length;
+	const short = attended < REQUIRED_EVENT_COUNT;
+
+	return (
+		<div>
+			<h3 className="text-sm font-semibold mb-3">
+				Attendance{" "}
+				<span className="text-muted-foreground font-normal">
+					({attended} event{attended === 1 ? "" : "s"})
+				</span>
+			</h3>
+
+			{short && (
+				<p className="mb-3 flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+					<AlertTriangle className="size-3.5 shrink-0" aria-hidden />
+					Attended {attended} of the {REQUIRED_EVENT_COUNT} required events.
+				</p>
+			)}
+
+			{attended === 0 ? (
+				<p className="text-sm text-muted-foreground">
+					No check-ins on file for this email.
+				</p>
+			) : (
+				<ul className="border rounded-md divide-y">
+					{attendance.map((event) => (
+						<li
+							key={event.eventId || event.eventName}
+							className={`flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-sm ${
+								event.isInfoSession ? "bg-primary/5" : ""
+							}`}
+						>
+							<span className="flex items-center gap-2 min-w-0">
+								{event.isInfoSession && (
+									<Star
+										className="size-3.5 shrink-0 text-primary"
+										aria-label="Info session"
+									/>
+								)}
+								<span
+									className={`truncate ${event.isInfoSession ? "font-semibold" : ""}`}
+								>
+									{event.eventName}
+								</span>
+							</span>
+							<span className="text-xs text-muted-foreground">
+								{formatDate(event.eventDate)}
+							</span>
+						</li>
+					))}
+				</ul>
+			)}
 		</div>
 	);
 }
@@ -144,6 +242,11 @@ export default function CandidateDetail({
 						This rushee was evaluated but never submitted an application.
 					</p>
 				)}
+			</section>
+
+			<section>
+				<Separator className="mb-6" />
+				<AttendanceSection profile={profile} />
 			</section>
 
 			{FORM_ORDER.map((formType) => {

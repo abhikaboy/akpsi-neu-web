@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, ChevronDown, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AdminGate from "../components/admin/AdminGate";
 import CandidateDetail, {
+	AttendanceBadge,
 	CandidateScoreStrip,
 	candidatePhoto,
 	FORM_ORDER,
@@ -27,7 +28,11 @@ import {
 } from "../components/ui/select";
 import { Separator } from "../components/ui/separator";
 import { useActiveCycle } from "../lib/activeCycle";
-import { fetchDeliberation, type DeliberationProfile } from "../lib/adminEvals";
+import {
+	fetchDeliberation,
+	REQUIRED_EVENT_COUNT,
+	type DeliberationProfile,
+} from "../lib/adminEvals";
 import type { EvalFormType } from "../lib/sanity";
 
 export const Route = createFileRoute("/admin/deliberate")({
@@ -41,6 +46,7 @@ type SortKey =
 	| "name"
 	| "totalEvaluations"
 	| "submittedAt"
+	| "eventsAttended"
 	| EvalFormType;
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
@@ -48,6 +54,7 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 	{ value: "name", label: "Name" },
 	{ value: "totalEvaluations", label: "Number of evals" },
 	{ value: "submittedAt", label: "Application date" },
+	{ value: "eventsAttended", label: "Events attended" },
 	...FORM_ORDER.map((formType) => ({
 		value: formType as SortKey,
 		label: `${FORM_LABELS[formType]} score`,
@@ -93,6 +100,16 @@ const COVERAGE_OPTIONS: { value: CoverageFilter; label: string }[] = [
 	})),
 ];
 
+/** Attendance filters surface who is short of the event requirement. */
+type AttendanceFilter = "any" | "below" | "met" | "info-session";
+
+const ATTENDANCE_OPTIONS: { value: AttendanceFilter; label: string }[] = [
+	{ value: "any", label: "Any attendance" },
+	{ value: "below", label: `Under ${REQUIRED_EVENT_COUNT} events` },
+	{ value: "met", label: `${REQUIRED_EVENT_COUNT}+ events` },
+	{ value: "info-session", label: "Attended an info session" },
+];
+
 const MIN_SCORE_OPTIONS = [0, 50, 60, 70, 80, 90];
 
 /** Sortable value for a profile, with nulls pushed to the bottom either way. */
@@ -105,6 +122,8 @@ function sortValue(
 			return profile.name.toLowerCase();
 		case "totalEvaluations":
 			return profile.totalEvaluations;
+		case "eventsAttended":
+			return profile.eventsAttended ?? 0;
 		case "submittedAt": {
 			const raw = profile.application?.submittedAt;
 			return raw ? new Date(raw).getTime() : Number.NEGATIVE_INFINITY;
@@ -144,6 +163,8 @@ function Deliberation({ viewerEmail }: { viewerEmail: string }) {
 	const [applicationFilter, setApplicationFilter] = useState(ALL);
 	const [coverageFilter, setCoverageFilter] = useState<CoverageFilter>("any");
 	const [mineFilter, setMineFilter] = useState<MineFilter>("any");
+	const [attendanceFilter, setAttendanceFilter] =
+		useState<AttendanceFilter>("any");
 	const [minScore, setMinScore] = useState(0);
 	const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -202,6 +223,17 @@ function Deliberation({ viewerEmail }: { viewerEmail: string }) {
 			}
 			if (minScore > 0 && (profile.overallScore ?? -1) < minScore) return false;
 
+			const attended = profile.eventsAttended ?? 0;
+			if (attendanceFilter === "below" && attended >= REQUIRED_EVENT_COUNT)
+				return false;
+			if (attendanceFilter === "met" && attended < REQUIRED_EVENT_COUNT)
+				return false;
+			if (
+				attendanceFilter === "info-session" &&
+				(profile.infoSessionsAttended ?? 0) === 0
+			)
+				return false;
+
 			if (mineFilter !== "any") {
 				const mine = profile.myFormTypes ?? [];
 				if (mineFilter === "mine" && mine.length === 0) return false;
@@ -237,6 +269,7 @@ function Deliberation({ viewerEmail }: { viewerEmail: string }) {
 		minScore,
 		coverageFilter,
 		mineFilter,
+		attendanceFilter,
 	]);
 
 	const sorted = useMemo(() => {
@@ -261,6 +294,7 @@ function Deliberation({ viewerEmail }: { viewerEmail: string }) {
 		setApplicationFilter(ALL);
 		setCoverageFilter("any");
 		setMineFilter("any");
+		setAttendanceFilter("any");
 		setMinScore(0);
 	};
 
@@ -270,6 +304,7 @@ function Deliberation({ viewerEmail }: { viewerEmail: string }) {
 		applicationFilter !== ALL ||
 		coverageFilter !== "any" ||
 		mineFilter !== "any" ||
+		attendanceFilter !== "any" ||
 		minScore > 0;
 
 	return (
@@ -353,6 +388,24 @@ function Deliberation({ viewerEmail }: { viewerEmail: string }) {
 					</SelectTrigger>
 					<SelectContent>
 						{MINE_OPTIONS.map((option) => (
+							<SelectItem key={option.value} value={option.value}>
+								{option.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+
+				<Select
+					value={attendanceFilter}
+					onValueChange={(value) =>
+						setAttendanceFilter(value as AttendanceFilter)
+					}
+				>
+					<SelectTrigger className="w-52">
+						<SelectValue placeholder="Attendance" />
+					</SelectTrigger>
+					<SelectContent>
+						{ATTENDANCE_OPTIONS.map((option) => (
 							<SelectItem key={option.value} value={option.value}>
 								{option.label}
 							</SelectItem>
@@ -498,6 +551,7 @@ function ProfileRow({
 								) : (
 									<Badge variant="outline">No application</Badge>
 								)}
+								<AttendanceBadge profile={profile} />
 							</div>
 							<p className="text-sm text-muted-foreground truncate">
 								{profile.email}

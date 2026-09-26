@@ -31,6 +31,16 @@ export interface Rushee {
 	hasApplication: boolean;
 }
 
+export interface AttendanceRecord {
+	eventId: string;
+	eventName: string;
+	eventDate: string | null;
+	isInfoSession: boolean;
+}
+
+/** Rush events a rushee must attend; mirrors REQUIRED_EVENT_COUNT in the API. */
+export const REQUIRED_EVENT_COUNT = 3;
+
 export interface FormSummary {
 	count: number;
 	averageScore: number | null;
@@ -61,6 +71,12 @@ export interface DeliberationProfile {
 	summary: Record<EvalFormType, FormSummary>;
 	/** Forms the signed-in brother has personally filed on this rushee. */
 	myFormTypes: EvalFormType[];
+	/** Rush events this rushee checked into, oldest first, deduped by event. */
+	attendance: AttendanceRecord[];
+	eventsAttended: number;
+	infoSessionsAttended: number;
+	/** True when they attended fewer than REQUIRED_EVENT_COUNT events. */
+	belowEventRequirement: boolean;
 	overallScore: number | null;
 	totalEvaluations: number;
 }

@@ -12,6 +12,15 @@ interface FormSummary {
 const IMAGE_RE = /\.(jpe?g|png|webp|gif|avif)(\?|$)/i
 
 /**
+ * Rush events carry no type field in Sanity, so an info session is recognised
+ * by name. They're the events we care most about, hence the flag on the record.
+ */
+const INFO_SESSION_RE = /info\s*(session|night)/i
+
+/** Events a rushee must attend for their rush to count. */
+const REQUIRED_EVENT_COUNT = 3
+
+/**
  * Applicants have no profile record, so their avatar is whatever image they
  * uploaded on the application (a headshot question, typically). PDFs and other
  * uploads are skipped; the UI falls back to initials when there's nothing.
@@ -42,9 +51,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const db = await getDb()
-    const [applications, evaluations] = await Promise.all([
+    const [applications, evaluations, checkins] = await Promise.all([
       db.collection('applications').find(cycleFilter).toArray(),
       db.collection('evaluations').find(cycleFilter).sort({ submittedAt: -1 }).toArray(),
+      db.collection('rushCheckins').find(cycleFilter).sort({ eventDate: 1 }).toArray(),
     ])
 
     const profiles = new Map<string, any>()
@@ -63,6 +73,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           // Which forms the brother making this request has filed on this
           // rushee — drives the "evaluated by me" filters.
           myFormTypes: [] as EvalFormType[],
+          attendance: [] as {
+            eventId: string
+            eventName: string
+            eventDate: string | null
+            isInfoSession: boolean
+          }[],
+          eventsAttended: 0,
+          infoSessionsAttended: 0,
+          belowEventRequirement: true,
           overallScore: null as number | null,
           totalEvaluations: 0,
         }
@@ -108,6 +127,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     }
 
+    // Attendance is keyed on the email the rushee checked in with, so a rushee
+    // who applied under a different address simply shows zero events.
+    for (const checkin of checkins) {
+      if (typeof checkin.email !== 'string') continue
+      const email = normalizeEmail(checkin.email)
+      const profile = ensure(email, checkin.name ?? email, checkin.cycle ?? '')
+      // One event can produce several check-in rows (re-submits); count it once.
+      if (profile.attendance.some((e: any) => e.eventId === checkin.eventId)) continue
+      profile.attendance.push({
+        eventId: String(checkin.eventId ?? ''),
+        eventName: checkin.eventName ?? 'Unnamed event',
+        eventDate: checkin.eventDate ? new Date(checkin.eventDate).toISOString() : null,
+        isInfoSession: INFO_SESSION_RE.test(String(checkin.eventName ?? '')),
+      })
+    }
+
     // Per-form averages, then one overall figure across every form so the table
     // can be ranked at a glance.
     for (const profile of profiles.values()) {
@@ -126,6 +161,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           evaluatorNames: forForm.map((e: any) => e.evaluatorName),
         }
       }
+      profile.attendance.sort((a: any, b: any) => (a.eventDate ?? '').localeCompare(b.eventDate ?? ''))
+      profile.eventsAttended = profile.attendance.length
+      profile.infoSessionsAttended = profile.attendance.filter((e: any) => e.isInfoSession).length
+      profile.belowEventRequirement = profile.eventsAttended < REQUIRED_EVENT_COUNT
       profile.totalEvaluations = profile.evaluations.length
       profile.overallScore = allScores.length
         ? Math.round((allScores.reduce((a, b) => a + b, 0) / allScores.length) * 10) / 10
