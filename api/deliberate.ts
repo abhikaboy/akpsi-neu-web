@@ -14,9 +14,8 @@ const IMAGE_RE = /\.(jpe?g|png|webp|gif|avif)(\?|$)/i
 /**
  * Rush events carry no type field in Sanity, so an info session is recognised
  * by name. They're the events we care most about, hence the flag on the record.
- * Co-op panels count as an info session for this purpose.
  */
-const INFO_SESSION_RE = /info\s*(session|night)|co[\s-]?op\s*panel/i
+const INFO_SESSION_RE = /info\s*(session|night)/i
 
 /** Events a rushee must attend for their rush to count. */
 const REQUIRED_EVENT_COUNT = 3

@@ -582,6 +582,19 @@ export async function getPresidentName(): Promise<string> {
   }
 }
 
+/** Falls back to the schema default so the page is never left unopenable. */
+export async function getDeliberationPassword(): Promise<string> {
+  try {
+    const result = await client.fetch(
+      '*[_type == "chapterSettings"][0].deliberationPassword'
+    )
+    return typeof result === 'string' && result.trim() ? result.trim() : 'miffy'
+  } catch (error) {
+    console.error('Error fetching the deliberation password:', error)
+    return 'miffy'
+  }
+}
+
 export async function getApplicationEnabled(): Promise<boolean> {
   try {
     const result = await client.fetch(

@@ -1,7 +1,6 @@
 import { AlertTriangle, Check, Star } from "lucide-react";
 import { useMemo } from "react";
 import CandidateChat from "./CandidateChat";
-import PresenceIndicator from "./PresenceIndicator";
 import { findImageAnswer, Headshot, isImageUrl } from "./Headshot";
 import { Separator } from "../ui/separator";
 import { Badge } from "../ui/badge";
@@ -194,14 +193,6 @@ export default function CandidateDetail({
 }) {
 	return (
 		<div className="space-y-6">
-			{cycle && (
-				<PresenceIndicator
-					cycle={cycle}
-					candidateEmail={profile.email}
-					viewerEmail={viewerEmail}
-				/>
-			)}
-
 			<section>
 				<h3 className="text-sm font-semibold mb-3">Application</h3>
 				{profile.application ? (

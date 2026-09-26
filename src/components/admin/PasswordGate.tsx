@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 
-const STORAGE_KEY = "akpsi-sheet-password-ok";
+const STORAGE_PREFIX = "akpsi-password-ok:";
 
 interface PasswordGateProps {
 	/**
@@ -14,17 +14,21 @@ interface PasswordGateProps {
 	 */
 	password: string;
 	title: string;
+	/** Distinguishes gates so unlocking one doesn't clear another. */
+	storageKey?: string;
 	children: ReactNode;
 }
 
 export default function PasswordGate({
 	password,
 	title,
+	storageKey = "sheet",
 	children,
 }: PasswordGateProps) {
+	const key = STORAGE_PREFIX + storageKey;
 	// Remembered for the tab so navigating away and back doesn't re-prompt.
 	const [unlocked, setUnlocked] = useState(
-		() => sessionStorage.getItem(STORAGE_KEY) === password,
+		() => sessionStorage.getItem(key) === password,
 	);
 	const [entry, setEntry] = useState("");
 	const [error, setError] = useState<string | null>(null);
@@ -37,7 +41,7 @@ export default function PasswordGate({
 			setError("That password is incorrect.");
 			return;
 		}
-		sessionStorage.setItem(STORAGE_KEY, password);
+		sessionStorage.setItem(key, password);
 		setUnlocked(true);
 	};
 

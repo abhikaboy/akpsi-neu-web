@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AdminGate from "../components/admin/AdminGate";
+import PasswordGate from "../components/admin/PasswordGate";
 import CandidateDetail, {
 	AttendanceBadge,
 	CandidateScoreStrip,
@@ -33,7 +34,7 @@ import {
 	REQUIRED_EVENT_COUNT,
 	type DeliberationProfile,
 } from "../lib/adminEvals";
-import type { EvalFormType } from "../lib/sanity";
+import { getDeliberationPassword, type EvalFormType } from "../lib/sanity";
 
 export const Route = createFileRoute("/admin/deliberate")({
 	component: AdminDeliberate,
@@ -136,7 +137,32 @@ function sortValue(
 }
 
 function AdminDeliberate() {
-	return <AdminGate>{(user) => <Deliberation viewerEmail={user.email} />}</AdminGate>;
+	// The password lives in Sanity under Chapter Settings so it can be rotated
+	// without a deploy; it loads through the existing public Sanity client
+	// rather than a new API route.
+	const [password, setPassword] = useState<string | null>(null);
+
+	useEffect(() => {
+		getDeliberationPassword().then(setPassword).catch(() => setPassword("miffy"));
+	}, []);
+
+	return (
+		<AdminGate>
+			{(user) =>
+				password === null ? (
+					<div className="skeleton h-40 rounded" />
+				) : (
+					<PasswordGate
+						password={password}
+						title="Deliberate"
+						storageKey="deliberate"
+					>
+						<Deliberation viewerEmail={user.email} />
+					</PasswordGate>
+				)
+			}
+		</AdminGate>
+	);
 }
 
 /**

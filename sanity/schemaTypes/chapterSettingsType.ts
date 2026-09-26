@@ -27,6 +27,14 @@ export default defineType({
       initialValue: false
     }),
     defineField({
+      name: 'deliberationPassword',
+      title: 'Deliberation Password',
+      type: 'string',
+      description:
+        'Typed once per tab to open the Deliberate page. Shoulder-surfing protection on top of the brother login, not real access control.',
+      initialValue: 'miffy'
+    }),
+    defineField({
       name: 'presidentName',
       title: 'President Name',
       type: 'string',

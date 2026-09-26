@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AdminGate from "../components/admin/AdminGate";
+import PasswordGate from "../components/admin/PasswordGate";
 import CandidateDetail, {
 	candidatePhoto,
 } from "../components/admin/CandidateDetail";
@@ -17,6 +18,7 @@ import {
 import { Input } from "../components/ui/input";
 import { useActiveCycle } from "../lib/activeCycle";
 import { fetchDeliberation, type DeliberationProfile } from "../lib/adminEvals";
+import { getDeliberationPassword } from "../lib/sanity";
 
 export const Route = createFileRoute("/admin/candidate/$email")({
 	component: AdminCandidatePage,
@@ -24,9 +26,29 @@ export const Route = createFileRoute("/admin/candidate/$email")({
 
 function AdminCandidatePage() {
 	const { email } = Route.useParams();
+	// Same gate and password as /admin/deliberate — this page shows the same
+	// record, so unlocking either one covers both for the tab.
+	const [password, setPassword] = useState<string | null>(null);
+
+	useEffect(() => {
+		getDeliberationPassword().then(setPassword).catch(() => setPassword("miffy"));
+	}, []);
+
 	return (
 		<AdminGate>
-			{(user) => <CandidatePage email={email} viewerEmail={user.email} />}
+			{(user) =>
+				password === null ? (
+					<div className="skeleton h-40 rounded" />
+				) : (
+					<PasswordGate
+						password={password}
+						title="Deliberate"
+						storageKey="deliberate"
+					>
+						<CandidatePage email={email} viewerEmail={user.email} />
+					</PasswordGate>
+				)
+			}
 		</AdminGate>
 	);
 }
