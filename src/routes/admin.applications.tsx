@@ -6,6 +6,7 @@ import {
 	findImageAnswer,
 	Headshot,
 	isImageUrl,
+	optimizedImageUrl,
 } from "../components/admin/Headshot";
 import ExportCsvButton from "../components/admin/ExportCsvButton";
 import RusheeLink from "../components/admin/RusheeLink";
@@ -347,9 +348,13 @@ function ApplicationsGallery({
 										</p>
 										{isImageUrl(answer.value) ? (
 											<a href={answer.value} target="_blank" rel="noreferrer">
+												{/* Preview is 160px tall; the link still opens the
+												    full-resolution original on click. */}
 												<img
-													src={answer.value}
+													src={optimizedImageUrl(answer.value, 160)}
 													alt={answer.label}
+													loading="lazy"
+													decoding="async"
 													className="mt-1 max-h-40 rounded border object-cover"
 												/>
 											</a>
