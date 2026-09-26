@@ -30,6 +30,7 @@ import {
 import { Separator } from "../components/ui/separator";
 import { useActiveCycle } from "../lib/activeCycle";
 import {
+	fetchCandidateProfile,
 	fetchDeliberation,
 	REQUIRED_EVENT_COUNT,
 	type DeliberationProfile,
@@ -550,6 +551,22 @@ function ProfileRow({
 	const Chevron = open ? ChevronDown : ChevronRight;
 	const photo = candidatePhoto(profile);
 
+	// Expanding a row is what needs the answers and eval responses, so they are
+	// fetched then — once per row, rather than for the whole chapter up front.
+	const [detail, setDetail] = useState<DeliberationProfile | null>(null);
+	useEffect(() => {
+		if (!open || detail) return;
+		let cancelled = false;
+		fetchCandidateProfile(profile.email, cycle)
+			.then((next) => {
+				if (!cancelled && next) setDetail(next);
+			})
+			.catch(() => {});
+		return () => {
+			cancelled = true;
+		};
+	}, [open, detail, profile.email, cycle]);
+
 	return (
 		<Card>
 			<CardHeader>
@@ -624,7 +641,7 @@ function ProfileRow({
 				<CardContent className="space-y-6">
 					<Separator />
 					<CandidateDetail
-						profile={profile}
+						profile={detail ?? profile}
 						cycle={cycle}
 						viewerEmail={viewerEmail}
 					/>

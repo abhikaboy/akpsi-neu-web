@@ -90,6 +90,37 @@ function findPhotoUrl(answers: unknown): string | null {
   return null
 }
 
+/**
+ * The list view renders names, scores and attendance — it never opens an
+ * application answer or an evaluation response. Those two arrays are almost
+ * the entire payload (applications average ~5KB each, nearly all of it essay
+ * text), so the chapter-wide request leaves them behind and a single-candidate
+ * request (`?email=`) fetches them for the one profile being read.
+ */
+function isDetailRequest(query: VercelRequest['query']): string | null {
+  const { email } = query
+  return typeof email === 'string' && email ? normalizeEmail(email) : null
+}
+
+/**
+ * Keeps only the answers whose value looks like an image URL, so the list can
+ * still show a headshot without shipping the essays. Done in the aggregation
+ * rather than after the fact because the point is to never send the text.
+ */
+const IMAGE_ANSWERS_ONLY = {
+  $filter: {
+    input: { $ifNull: ['$answers', []] },
+    as: 'answer',
+    cond: {
+      $regexMatch: {
+        input: { $ifNull: ['$$answer.value', ''] },
+        regex: '^https?://.*\\.(jpe?g|png|webp|gif|avif)(\\?|$)',
+        options: 'i',
+      },
+    },
+  },
+}
+
 /** Read-only: every source we hold on one applicant, joined on their email. */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
@@ -103,12 +134,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { cycle } = req.query
   const cycleFilter = typeof cycle === 'string' && cycle ? { cycle } : {}
+  const detailEmail = isDetailRequest(req.query)
 
   try {
     const db = await getDb()
+
+    // Profiles are merged across emails before the requested candidate can be
+    // picked out, so both modes read the same rows; only the heavy per-document
+    // arrays differ.
+    const applicationProjection = detailEmail
+      ? { $project: { name: 1, email: 1, cycle: 1, status: 1, submittedAt: 1, answers: 1 } }
+      : {
+          $project: {
+            name: 1,
+            email: 1,
+            cycle: 1,
+            status: 1,
+            submittedAt: 1,
+            answers: IMAGE_ANSWERS_ONLY,
+          },
+        }
+
+    const evaluationProjection = detailEmail
+      ? {}
+      : { projection: { responses: 0 } }
+
     const [applications, evaluations, checkins] = await Promise.all([
-      db.collection('applications').find(cycleFilter).toArray(),
-      db.collection('evaluations').find(cycleFilter).sort({ submittedAt: -1 }).toArray(),
+      db.collection('applications').aggregate([{ $match: cycleFilter }, applicationProjection]).toArray(),
+      db
+        .collection('evaluations')
+        .find(cycleFilter, evaluationProjection)
+        .sort({ submittedAt: -1 })
+        .toArray(),
       db.collection('rushCheckins').find(cycleFilter).sort({ eventDate: 1 }).toArray(),
     ])
 
@@ -158,7 +215,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         _id: String(app._id),
         status: app.status ?? 'new',
         submittedAt: app.submittedAt ?? null,
-        answers: Array.isArray(app.answers) ? app.answers : [],
+        // Absent in list mode: the field is omitted rather than sent empty, so
+        // a consumer that needs answers fails loudly instead of rendering none.
+        ...(detailEmail ? { answers: Array.isArray(app.answers) ? app.answers : [] } : {}),
       }
       profile.photoUrl = findPhotoUrl(app.answers)
     }
@@ -179,7 +238,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         evaluatorName: evaluation.evaluatorName ?? 'Unknown',
         rawAverage: evaluation.rawAverage ?? null,
         normalizedScore: evaluation.normalizedScore ?? null,
-        responses: Array.isArray(evaluation.responses) ? evaluation.responses : [],
+        ...(detailEmail
+          ? { responses: Array.isArray(evaluation.responses) ? evaluation.responses : [] }
+          : {}),
         submittedAt: evaluation.submittedAt ?? null,
       })
     }
@@ -236,6 +297,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (b.overallScore === null) return -1
       return b.overallScore - a.overallScore
     })
+
+    if (detailEmail) {
+      // Merging can move a candidate under a different canonical address, so
+      // the alias list is searched too — the same match the UI route makes.
+      const profile = sorted.find(
+        (p) => p.email === detailEmail || p.aliasEmails.includes(detailEmail),
+      )
+      if (!profile) return res.status(404).json({ error: 'Candidate not found' })
+      return res.status(200).json({ profile })
+    }
 
     return res.status(200).json({ profiles: sorted })
   } catch (err) {

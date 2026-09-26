@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
 	fetchChatMessages,
@@ -7,8 +7,6 @@ import {
 } from "../../lib/chat";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
-
-const POLL_MS = 3000;
 
 function formatTime(value: string): string {
 	return new Date(value).toLocaleTimeString([], {
@@ -19,9 +17,10 @@ function formatTime(value: string): string {
 
 /**
  * A discussion thread scoped to one candidate + cycle, for brothers to argue
- * a rushee's case without leaving the deliberation view. Polls every few
- * seconds rather than pushing, which is plenty responsive for a handful of
- * people in the same room during deliberations.
+ * a rushee's case without leaving the deliberation view. The thread loads once
+ * and refreshes on demand: an interval poll here fired per open tab and grew
+ * into the bulk of the project's function invocations, crowding out the
+ * queries that deliberation actually depends on.
  */
 export default function CandidateChat({
 	cycle,
@@ -35,23 +34,38 @@ export default function CandidateChat({
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [draft, setDraft] = useState("");
 	const [sending, setSending] = useState(false);
+	const [refreshing, setRefreshing] = useState(false);
 	const listRef = useRef<HTMLDivElement>(null);
+
+	const load = useCallback(
+		() => fetchChatMessages(cycle, candidateEmail),
+		[cycle, candidateEmail],
+	);
 
 	useEffect(() => {
 		let cancelled = false;
-		const poll = () =>
-			fetchChatMessages(cycle, candidateEmail)
-				.then((next) => {
-					if (!cancelled) setMessages(next);
-				})
-				.catch(() => {});
-		poll();
-		const id = setInterval(poll, POLL_MS);
+		load()
+			.then((next) => {
+				if (!cancelled) setMessages(next);
+			})
+			.catch(() => {});
 		return () => {
 			cancelled = true;
-			clearInterval(id);
 		};
-	}, [cycle, candidateEmail]);
+	}, [load]);
+
+	const handleRefresh = async () => {
+		setRefreshing(true);
+		try {
+			setMessages(await load());
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : "Failed to refresh the thread.",
+			);
+		} finally {
+			setRefreshing(false);
+		}
+	};
 
 	useEffect(() => {
 		listRef.current?.scrollTo({ top: listRef.current.scrollHeight });
@@ -80,6 +94,18 @@ export default function CandidateChat({
 
 	return (
 		<div className="border rounded-md">
+			<div className="flex items-center justify-between border-b px-3 py-2">
+				<p className="text-xs text-muted-foreground">Discussion</p>
+				<Button
+					type="button"
+					variant="ghost"
+					size="sm"
+					onClick={handleRefresh}
+					disabled={refreshing}
+				>
+					{refreshing ? "Refreshing..." : "Refresh"}
+				</Button>
+			</div>
 			<div ref={listRef} className="max-h-64 overflow-y-auto p-3 space-y-3">
 				{messages.length === 0 ? (
 					<p className="text-sm text-muted-foreground">

@@ -201,7 +201,7 @@ export default function CandidateDetail({
 							Submitted {formatDate(profile.application.submittedAt)}
 						</p>
 						<div className="grid gap-3 sm:grid-cols-2">
-							{profile.application.answers.map((answer) => (
+							{(profile.application.answers ?? []).map((answer) => (
 								<div key={answer.label}>
 									<p className="text-xs font-semibold text-muted-foreground">
 										{answer.label}
@@ -299,7 +299,7 @@ function EvalFormSection({
 	const criteriaLabels = useMemo(() => {
 		const labels: string[] = [];
 		for (const evaluation of evaluations) {
-			for (const response of evaluation.responses) {
+			for (const response of evaluation.responses ?? []) {
 				if (response.fieldType === "score" && !labels.includes(response.label)) {
 					labels.push(response.label);
 				}
@@ -312,7 +312,7 @@ function EvalFormSection({
 		return criteriaLabels.map((label) => {
 			const scores = evaluations
 				.map((evaluation) =>
-					evaluation.responses.find((r) => r.label === label),
+					(evaluation.responses ?? []).find((r) => r.label === label),
 				)
 				.filter(
 					(response): response is NonNullable<typeof response> =>
@@ -325,7 +325,7 @@ function EvalFormSection({
 	}, [criteriaLabels, evaluations]);
 
 	const notesFor = (evaluation: ProfileEvaluation) =>
-		evaluation.responses
+		(evaluation.responses ?? [])
 			.filter((r) => r.fieldType !== "score" && r.value)
 			.map((r) => r.value)
 			.join(" / ");
@@ -376,7 +376,7 @@ function EvalFormSection({
 									{evaluation.evaluatorName}
 								</td>
 								{criteriaLabels.map((label) => {
-									const response = evaluation.responses.find(
+									const response = (evaluation.responses ?? []).find(
 										(r) => r.label === label,
 									);
 									return (
@@ -418,7 +418,7 @@ function InterviewSection({
 			</h3>
 
 			<div className="border rounded-md divide-y">
-				{evaluation.responses.map((response) => (
+				{(evaluation.responses ?? []).map((response) => (
 					<div
 						key={response.label}
 						className="grid sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-3 px-3 py-2.5"

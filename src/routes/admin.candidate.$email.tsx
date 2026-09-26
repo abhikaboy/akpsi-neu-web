@@ -17,7 +17,11 @@ import {
 } from "../components/ui/popover";
 import { Input } from "../components/ui/input";
 import { useActiveCycle } from "../lib/activeCycle";
-import { fetchDeliberation, type DeliberationProfile } from "../lib/adminEvals";
+import {
+	fetchCandidateProfile,
+	fetchDeliberation,
+	type DeliberationProfile,
+} from "../lib/adminEvals";
 import { getDeliberationPassword } from "../lib/sanity";
 
 export const Route = createFileRoute("/admin/candidate/$email")({
@@ -74,6 +78,9 @@ function CandidatePage({
 	const [error, setError] = useState<string | null>(null);
 	const [pickerOpen, setPickerOpen] = useState(false);
 	const [search, setSearch] = useState("");
+	// The roster above is the light list; the answers and eval responses this
+	// page actually renders are fetched for this one candidate.
+	const [detail, setDetail] = useState<DeliberationProfile | null>(null);
 
 	useEffect(() => {
 		if (cycleLoading) return;
@@ -100,6 +107,20 @@ function CandidatePage({
 	}, [cycle, cycleLoading]);
 
 	const decodedEmail = decodeURIComponent(email).toLowerCase();
+
+	useEffect(() => {
+		if (cycleLoading || !cycle) return;
+		let cancelled = false;
+		setDetail(null);
+		fetchCandidateProfile(decodedEmail, cycle)
+			.then((next) => {
+				if (!cancelled) setDetail(next);
+			})
+			.catch(() => {});
+		return () => {
+			cancelled = true;
+		};
+	}, [decodedEmail, cycle, cycleLoading]);
 	const sortedProfiles = useMemo(
 		() => [...profiles].sort((a, b) => a.name.localeCompare(b.name)),
 		[profiles],
@@ -251,7 +272,7 @@ function CandidatePage({
 					</CardHeader>
 					<CardContent>
 						<CandidateDetail
-							profile={profile}
+							profile={detail ?? profile}
 							cycle={cycle ?? ""}
 							viewerEmail={viewerEmail}
 						/>

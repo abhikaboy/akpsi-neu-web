@@ -57,7 +57,8 @@ export interface DeliberationProfile {
 		_id: string;
 		status: string;
 		submittedAt: string | null;
-		answers: { label: string; value: string }[];
+		/** Detail requests only; the chapter-wide list omits it. */
+		answers?: { label: string; value: string }[];
 	} | null;
 	/** Image uploaded on the application, if any; the UI falls back to initials. */
 	photoUrl: string | null;
@@ -67,7 +68,8 @@ export interface DeliberationProfile {
 		evaluatorName: string;
 		rawAverage: number | null;
 		normalizedScore: number | null;
-		responses: EvalResponseValue[];
+		/** Detail requests only; the chapter-wide list omits it. */
+		responses?: EvalResponseValue[];
 		submittedAt: string | null;
 	}[];
 	summary: Record<EvalFormType, FormSummary>;
@@ -117,6 +119,11 @@ export async function fetchEvaluations(filters?: {
 	return body.evaluations ?? [];
 }
 
+/**
+ * The ranked roster for the deliberation table. Application answers and
+ * evaluation responses are left out — they dominate the payload and no list
+ * view reads them. Use `fetchCandidateProfile` for the one candidate on screen.
+ */
 export async function fetchDeliberation(
 	cycle?: string,
 ): Promise<DeliberationProfile[]> {
@@ -125,6 +132,19 @@ export async function fetchDeliberation(
 		`/api/deliberate${query}`,
 	);
 	return body.profiles ?? [];
+}
+
+/** One candidate with their full application answers and eval responses. */
+export async function fetchCandidateProfile(
+	email: string,
+	cycle?: string,
+): Promise<DeliberationProfile | null> {
+	const params = new URLSearchParams({ email });
+	if (cycle) params.set("cycle", cycle);
+	const body = await getJson<{ profile: DeliberationProfile }>(
+		`/api/deliberate?${params.toString()}`,
+	);
+	return body.profile ?? null;
 }
 
 export async function submitEvaluation(evaluation: {
